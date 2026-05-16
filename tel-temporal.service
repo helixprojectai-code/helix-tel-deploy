@@ -1,0 +1,17 @@
+[Unit]
+Description=TEL Temporal Stability Run — single convergence pass
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=your-user
+WorkingDirectory=/home/your-user/tel-deploy/ops
+EnvironmentFile=/home/your-user/.tel_temporal.env
+ExecStart=/usr/bin/python3 /home/your-user/tel-deploy/ops/tel_deploy/temporal_run.py \
+    --endpoint ${TEL_ENDPOINT} \
+    --model ${TEL_MODEL} \
+    --key ${TEL_API_KEY} \
+    --log /home/your-user/temporal_log.jsonl
+StandardOutput=append:/home/your-user/temporal_run.log
+StandardError=append:/home/your-user/temporal_run.log

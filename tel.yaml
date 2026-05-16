@@ -1,0 +1,17 @@
+# TEL Mesh Configuration
+hub:
+  host: "your-hub-host"
+  port: 9738
+
+node:
+  id: "NODE_A"
+  seed: "HELIX_CONSTITUTIONAL_GAMMA_0.333"
+
+logging:
+  level: "INFO"
+  file: null
+
+reconnect:
+  enabled: true
+  interval_seconds: 5
+  max_attempts: 0

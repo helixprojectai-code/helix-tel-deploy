@@ -1,0 +1,17 @@
+[Unit]
+Description=TEL Mesh Hub — Blind JSON Router
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=your-user
+WorkingDirectory=/home/your-user/tel-deploy/ops
+ExecStart=/home/your-user/tel-deploy/ops/tel_deploy/run_hub.sh
+Restart=always
+RestartSec=5
+StandardOutput=append:/home/your-user/hub.log
+StandardError=append:/home/your-user/hub.log
+
+[Install]
+WantedBy=multi-user.target
