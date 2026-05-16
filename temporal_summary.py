@@ -10,7 +10,6 @@ import argparse
 import json
 import os
 import sys
-from datetime import datetime, timezone
 
 DEFAULT_LOG = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "temporal_log.jsonl"
@@ -56,7 +55,7 @@ def main():
     grammar_versions = sorted(set(e.get("grammar_version", "unknown") for e in entries))
 
     print(f"\n{'='*64}")
-    print(f"TEL TEMPORAL STABILITY REPORT")
+    print("TEL TEMPORAL STABILITY REPORT")
     print(f"Log: {args.log}")
     print(f"{'='*64}")
     print(f"Total runs:      {len(entries)}")

@@ -56,7 +56,9 @@ def derive_c_seed(c_vector: list, grammar_version: str = GRAMMAR_VERSION) -> str
     The grammar_version prefix ensures recalibrations produce distinct,
     traceable C-seeds. All nodes must use the same version string.
     """
-    versioned = (grammar_version + json.dumps(c_vector, separators=(",", ":"))).encode("utf-8")
+    versioned = (grammar_version + json.dumps(c_vector, separators=(",", ":"))).encode(
+        "utf-8"
+    )
     return hashlib.sha3_256(versioned).hexdigest()
 
 

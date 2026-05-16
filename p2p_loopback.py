@@ -78,7 +78,7 @@ async def run_loopback(hub: str, port: int):
     ok = decrypted == original
     print(f"    Original:  {original}")
     print(f"    Decrypted: {decrypted}")
-    print(f"    PASS" if ok else f"    FAIL — mismatch")
+    print("    PASS" if ok else "    FAIL — mismatch")
     RESULTS.append(("plain text", ok))
 
     # --- TEST 2: Unicode / special chars ---
@@ -91,7 +91,7 @@ async def run_loopback(hub: str, port: int):
     ok = decrypted == original
     print(f"    Original:  {original}")
     print(f"    Decrypted: {decrypted}")
-    print(f"    PASS" if ok else f"    FAIL — mismatch")
+    print("    PASS" if ok else "    FAIL — mismatch")
     RESULTS.append(("unicode", ok))
 
     # --- TEST 3: Binary round-trip (random bytes) ---
@@ -106,7 +106,7 @@ async def run_loopback(hub: str, port: int):
     ok = decrypted_hash == original_hash
     print(f"    Original hash:  {original_hash[:32]}...")
     print(f"    Decrypted hash: {decrypted_hash[:32]}...")
-    print(f"    PASS" if ok else f"    FAIL — hash mismatch")
+    print("    PASS" if ok else "    FAIL — hash mismatch")
     RESULTS.append(("binary 1KB", ok))
 
     # --- TEST 4: Binary — larger payload ---
@@ -121,7 +121,7 @@ async def run_loopback(hub: str, port: int):
     ok = decrypted_hash == original_hash
     print(f"    Original hash:  {original_hash[:32]}...")
     print(f"    Decrypted hash: {decrypted_hash[:32]}...")
-    print(f"    PASS" if ok else f"    FAIL — hash mismatch")
+    print("    PASS" if ok else "    FAIL — hash mismatch")
     RESULTS.append(("binary 64KB", ok))
 
     # --- TEST 5: Nonce independence — encrypt same plaintext twice, ciphertexts must differ ---
@@ -132,7 +132,7 @@ async def run_loopback(hub: str, port: int):
     ok = p1["cipher_b64"] != p2["cipher_b64"] and p1["nonce"] != p2["nonce"]
     print(f"    Nonce 1: {p1['nonce']}  Nonce 2: {p2['nonce']}")
     print(f"    Ciphertexts differ: {p1['cipher_b64'][:16]} vs {p2['cipher_b64'][:16]}")
-    print(f"    PASS" if ok else f"    FAIL — nonce reuse detected")
+    print("    PASS" if ok else "    FAIL — nonce reuse detected")
     RESULTS.append(("nonce independence", ok))
 
     writer.close()

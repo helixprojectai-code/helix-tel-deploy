@@ -51,7 +51,7 @@ async def run(
 ):
     # --- Phase 1: Convergence ---
     print(f"\n{'='*60}")
-    print(f"TEL CONVERGENCE SEND")
+    print("TEL CONVERGENCE SEND")
     print(f"Node: {node_id}  →  Target: {target}")
     print(f"Endpoint: {endpoint}  Model: {model}")
     print(f"{'='*60}\n")
@@ -133,7 +133,7 @@ async def run(
 
     print(f"\n{'='*60}")
     print(f"C-seed: {c_seed[:16]}...  Substrate: {split.substrate}")
-    print(f"Transmitted WITHOUT pre-sharing seed. Receiver must independently converge.")
+    print("Transmitted WITHOUT pre-sharing seed. Receiver must independently converge.")
     print(f"{'='*60}\n")
 
 

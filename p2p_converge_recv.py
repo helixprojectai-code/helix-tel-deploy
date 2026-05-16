@@ -49,7 +49,7 @@ async def run(
     max_passes: int = 30,
 ):
     print(f"\n{'='*60}")
-    print(f"TEL CONVERGENCE RECV")
+    print("TEL CONVERGENCE RECV")
     print(f"Node: {node_id}")
     print(f"Endpoint: {endpoint}  Model: {model}")
     print(f"{'='*60}\n")
