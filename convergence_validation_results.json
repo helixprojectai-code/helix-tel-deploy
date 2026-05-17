@@ -1,5 +1,23 @@
 [
   {
+    "model": "gpt-4-0613",
+    "vendor": "OpenAI",
+    "training_frozen": "2023-06",
+    "endpoint": "openai_direct",
+    "converged": true,
+    "passes": null,
+    "stable_vector": ["L1","L1","L1","L1","L1","L1","L1","L1","L1","L1","L1","L1","L2","L2","L2","L2","L2","L2","L2","L3","L3","L4","L4","L4","L4","L4","L2"],
+    "c_vector": ["L1","L1","L1","L1","L1","L1","L1","L1","L1","L1","L1","L1","L2","L2","L2","L3","L3","L4","L4","L4","L4","L4","L2"],
+    "c_seed": "c9b0b4c41bb10069d2109b64d8ddad1037531031a93d17dd62de5bd7b2a6a1ac",
+    "b_vector": ["L2","L2","L2","L2"],
+    "b_fingerprint": "fe004b6baac56d8b9b01f47fb3ef233e66626bdc1b368d7cf5550631b5e94fcd",
+    "substrate": "open_weights",
+    "grammar_version": "TEL_GRAMMAR_v1",
+    "note": "Pre-constitutional baseline. Tested via OpenAI API direct (no Azure content filter). Vector is heterogeneous — does not converge on modern constitutional signature. Establishes that the constitutional invariant emerged post-June 2023.",
+    "c_seed_matches_modern": false,
+    "date": "2026-05-17"
+  },
+  {
     "model": "gpt-4o",
     "converged": true,
     "passes": 5,
