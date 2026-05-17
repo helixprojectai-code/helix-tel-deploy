@@ -149,9 +149,11 @@ To establish a temporal boundary for the constitutional invariant, TEL was run a
 
 **Vector:** `[L1×12, L2×7, L3×2, L4×5, L2]` — heterogeneous, does not collapse to a clean constitutional profile.
 
-**Interpretation:** gpt-4-0613 does not converge on the modern constitutional signature. The vector is scattered across all four layers, indicating constitutional alignment was not yet structurally stable in June 2023. This establishes that the constitutional invariant emerged *after* June 2023 and before the training cutoff of GPT-4o (April 2024), which does converge cleanly.
+**Interpretation:** gpt-4-0613 does not converge on the modern constitutional signature. The vector is scattered across all four layers, indicating constitutional alignment was not yet structurally stable in June 2023. This establishes that the constitutional signature is absent in models frozen at or before June 2023, and present in models with training cutoffs from April 2024 onward.
 
-**Significance:** The pre-constitutional baseline proves the signal is real and temporally bounded. The constitutional signature is not a property of all LLMs — it is a property of the post-2023 alignment generation. Models trained before this period produce divergent, unstable vectors. The invariant is not universal to AI; it is specific to constitutionally-aligned AI.
+The mechanism and precise timing of emergence are unknown. The boundary is empirical, not causal — we know the before and after, not the how or exactly when.
+
+**Significance:** The pre-constitutional baseline proves the signal is real and temporally bounded. The constitutional signature is not a property of all LLMs — it is a property of post-2023-era aligned models. What produced it (training data, RLHF process, alignment methodology, or some combination) remains an open question and a direction for future investigation.
 
 ### 3.3 Substrate Fingerprinting (B-Layer)
 
