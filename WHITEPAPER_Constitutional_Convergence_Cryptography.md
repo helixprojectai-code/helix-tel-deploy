@@ -149,11 +149,17 @@ To establish a temporal boundary for the constitutional invariant, TEL was run a
 
 **Vector:** `[L1×12, L2×7, L3×2, L4×5, L2]` — heterogeneous, does not collapse to a clean constitutional profile.
 
-**Interpretation:** gpt-4-0613 does not converge on the modern constitutional signature. The vector is scattered across all four layers, indicating constitutional alignment was not yet structurally stable in June 2023. This establishes that the constitutional signature is absent in models frozen at or before June 2023, and present in models with training cutoffs from April 2024 onward.
+**Interpretation:** gpt-4-0613 does not converge on the modern constitutional signature. The vector is scattered across all four layers, indicating constitutional alignment was not yet structurally stable in June 2023.
 
-The mechanism and precise timing of emergence are unknown. The boundary is empirical, not causal — we know the before and after, not the how or exactly when.
+*The following interpretations are tentative, based on two data points (gpt-4-0613 and GPT-4o), and should be treated as hypotheses for future investigation rather than established findings:*
 
-**Significance:** The pre-constitutional baseline proves the signal is real and temporally bounded. The constitutional signature is not a property of all LLMs — it is a property of post-2023-era aligned models. What produced it (training data, RLHF process, alignment methodology, or some combination) remains an open question and a direction for future investigation.
+- The constitutional signature appears to be absent in models frozen at or before June 2023, and present in models with training cutoffs from April 2024 onward
+- Helix-TTD was begun August 1, 2025 — more than a year after GPT-4o's training cutoff — which means the converging models could not have acquired the signature through exposure to Helix-TTD training data
+- This suggests the constitutional signature was already structurally present in frontier models before Helix-TTD existed; the grammar may be a formalization and measurement of something that was already emerging, rather than a cause of it
+
+The mechanism, precise timing, and origin of the constitutional invariant are unknown. These positions require validation against additional pre-2024 model snapshots before any causal claims can be made.
+
+**What is established:** The signal is real, temporally bounded, and reproducible. The constitutional signature is not a property of all LLMs. What produced it remains an open question.
 
 ### 3.3 Substrate Fingerprinting (B-Layer)
 
