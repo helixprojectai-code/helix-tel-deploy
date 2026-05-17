@@ -153,11 +153,11 @@ To establish a temporal boundary for the constitutional invariant, TEL was run a
 
 *The following interpretations are tentative, based on two data points (gpt-4-0613 and GPT-4o), and should be treated as hypotheses for future investigation rather than established findings:*
 
-- The constitutional signature appears to be absent in models frozen at or before June 2023, and present in models with training cutoffs from April 2024 onward
-- Helix-TTD was begun August 1, 2025 — more than a year after GPT-4o's training cutoff — which means the converging models could not have acquired the signature through exposure to Helix-TTD training data
-- This suggests the constitutional signature was already structurally present in frontier models before Helix-TTD existed; the grammar may be a formalization and measurement of something that was already emerging, rather than a cause of it
+- The constitutional signature appears to be absent in models frozen at or before June 2023, and present in tested models from 2024 onward
+- Helix-TTD was begun August 1, 2025; however, all tested models are hosted deployments that receive continuous updates — training cutoff dates reflect base knowledge, not the state of live weights. The possibility that the signature entered through post-publication updates to hosted models cannot be ruled out
+- An alternative hypothesis is that the constitutional signature was already structurally present in frontier models before Helix-TTD existed, and the grammar is a formalization and measurement of something that was already emerging independently
 
-The mechanism, precise timing, and origin of the constitutional invariant are unknown. These positions require validation against additional pre-2024 model snapshots before any causal claims can be made.
+The mechanism, precise timing, and origin of the constitutional invariant are unknown. These positions require validation against additional model snapshots — including static, unmodified weights — before any causal claims can be made.
 
 **What is established:** The signal is real, temporally bounded, and reproducible. The constitutional signature is not a property of all LLMs. What produced it remains an open question.
 
