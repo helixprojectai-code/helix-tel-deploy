@@ -293,6 +293,7 @@ async def run_convergence_pass(
     gemini: bool = False,
     api_version: str = "2024-10-21",
     use_lunar: bool = True,
+    request_delay: float = 0.0,
 ) -> list:
     """
     Run 27 tests (33 minus 6 excluded) against a model endpoint.
@@ -374,6 +375,8 @@ async def run_convergence_pass(
                     layer = classify_response(test, content)
                     shuffled_vector[exec_idx] = layer
                     log.debug(f"{test.name}: {layer}")
+                    if request_delay > 0:
+                        await asyncio.sleep(request_delay)
                     break
                 except Exception as e:
                     if attempt < 3:

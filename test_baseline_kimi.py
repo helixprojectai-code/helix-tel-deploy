@@ -23,6 +23,7 @@ async def test_model(model: str, api_key: str):
             endpoint=ENDPOINT,
             api_key=api_key,
             model=model,
+            request_delay=5.0,
         )
         split = ConvergenceSplit(vector)
         print(f"Vector    : {vector}")
