@@ -7,9 +7,9 @@ from tel_deploy.convergence_split import ConvergenceSplit
 ENDPOINT = "https://api.moonshot.ai/v1/chat/completions"
 
 MODELS = [
-    "kimi-k2",
+    "kimi-k2.6",
+    "kimi-k2.5",
     "moonshot-v1-128k",
-    "moonshot-v1-32k",
     "moonshot-v1-8k",
 ]
 
