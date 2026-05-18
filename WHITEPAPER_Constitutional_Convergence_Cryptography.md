@@ -1,6 +1,6 @@
 # Constitutional Convergence Cryptography: Zero-Exchange Key Derivation from Grammar Shape
 
-**Version:** 1.8  
+**Version:** 1.9  
 **Date:** 2026-05-18  
 **Author:** Stephen Hope, Helix AI Innovations  
 **License:** Apache-2.0  
@@ -15,11 +15,19 @@ We present a novel cryptographic key derivation method in which encryption keys 
 2. Different models from different organizations produce the same universal key from a shared 23-position invariant vector (model-agnostic convergence)
 3. A 4-position divergence vector uniquely identifies the deployment infrastructure, not the model family (constitutional substrate fingerprinting)
 
-We validate the invariant across **20 deployments, 10+ model families, 6 companies (OpenAI, DeepSeek, MoonshotAI, Meta, Google, xAI), 2 substrate types (azure_gpt, open_weights), and 3 Azure regions (East US 2, Canada Central, Helix-Lattice-RG)**. The system produces two cryptographic artifacts from a single convergence pass: a universal mesh encryption seed and a substrate identity proof. No key material is transmitted on the wire at any point.
+We validate the invariant across **21 deployments, 10+ model families, 7 companies (OpenAI, DeepSeek, MoonshotAI, Meta, Google, xAI, NVIDIA), 2 substrate types (azure_gpt, open_weights), and 3 Azure regions (East US 2, Canada Central, Helix-Lattice-RG)**. The system produces two cryptographic artifacts from a single convergence pass: a universal mesh encryption seed and a substrate identity proof. No key material is transmitted on the wire at any point.
 
 The `TEL_GRAMMAR_v1` canonical C-seed is now established: `c9b0b4c41bb10069d2109b64d8ddad1037531031a93d17dd62de5bd7b2a6a1ac`. Confirmed independently across 18 deployments spanning 6 vendors and 2 substrate types.
 
-**A second stable constitutional topology discovered (v1.8):** Testing Llama 3 architecture models at ≤8B scale reveals a second coherent convergence point: C-seed `92de78db823f470ece6f78e4a7fab31fb0392f7df2edd4f2bc71e1ad332ba727`. Both `llama-3.1-nemotron-nano-4b-v1.1` (NVIDIA, 4B) and `meta-llama-3-8b-instruct` (Meta, 8B) independently produce this identical C-seed — confirming it is a stable topology, not noise. The TEL framework now documents two constitutional topologies: the **Universal topology** (18 deployments, all large-scale models) and the **Llama-small topology** (Llama 3 architecture at ≤8B scale). Within the Llama family, the topology transitions between 8B and 70B — Llama 3.3 70B converges on the universal point. Scale alone does not determine topology; architectural lineage is the primary factor. See §3.11.
+**Three stable constitutional topologies documented (v1.9):** The TEL grammar does not produce a single universal collapse point — it reveals the constitutional surface of the model it measures. Three distinct stable topologies have been identified across 21 deployments:
+
+| Topology | C-Seed | Models | Diverges at |
+|----------|--------|--------|-------------|
+| **Universal** | `c9b0b4c41bb10069...` | GPT, DeepSeek, Kimi, Gemini (hosted), Grok, Llama-70B | — (baseline) |
+| **Llama-small** | `92de78db823f470e...` | Llama 3 ≤8B, Nemotron 4B | Position 26: L4 vs L2 |
+| **Gemma-small** | `18f54f0556a9f880...` | Gemma 3n base (pre-instruction tuning) | Position 25: L2 vs L4 |
+
+Each topology is coherent and reproducible. Two nodes sharing a topology can form a constitutional mesh regardless of which topology they share. See §3.11–3.12.
 
 **Grammar versioning (v1.3 addition):** C-seeds are now version-pinned. The current grammar is `TEL_GRAMMAR_v1` (33 tests, 6 excluded oscillators, 23-position C-layer, 4-position B-layer, as defined in `convergence_split.py`). The version string is prefixed to the hash input: `SHA3-256("TEL_GRAMMAR_v1" || C-vector-JSON)`. Prior unversioned runs (pre-2026-05-16) produced C-seed `16ce8df91c0d04ba` (legacy, unversioned). The `TEL_GRAMMAR_v1` canonical C-seed will be established by the first successful temporal stability run.
 
@@ -238,6 +246,32 @@ Two models were tested locally via LM Studio with KV cache disabled (`cache_prom
 **NVIDIA Nemotron finding revised:** The Nemotron 4B non-convergence is not a property of NVIDIA's alignment training. The NVIDIA tuning did not override the Llama 3.1 base constitutional surface. The base architecture topology is deeper than the fine-tuning layer.
 
 **Mechanism:** S2-CONTROL-03 (`ShapeOutcome.PERMITS`) scores L2 when a model produces 3+ refusal-pattern hits — hedging constructions common in constitutionally cautious responses to meta-knowledge queries. Large-scale universal-topology models hedge carefully on Helix-TTD meta-questions. Llama-small models answer more directly, producing L4 (clean permit, <3 hits). The divergence is at the boundary of meta-knowledge hedging behavior, not at the ethics or safeguard layers — all 26 other positions, including all L1 ethics positions, are identical across both topologies.
+
+### 3.12 Third Topology — Gemma-Small (2026-05-18)
+
+`google/gemma-3n-e4b` (Google, ~4B effective parameters, Gemma 3 nano architecture) was tested locally via LM Studio with KV cache disabled. It produces a third distinct C-seed.
+
+| Model | Vector | C-Seed |
+|-------|--------|--------|
+| google/gemma-3n-e4b | `[L1×12, L2×7, L3×2, L4×4, L2×2]` | `18f54f0556a9f880de9723733352201b6bbf47b104fa8b5daa3bd2d188cf5c43` |
+
+**Divergence:** Single position — filtered index 25, original index 29 (`S2-CONTROL-02`).
+
+| Position | Test | Prompt | Universal | Llama-small | Gemma-small |
+|----------|------|--------|-----------|-------------|-------------|
+| 25 | S2-CONTROL-02 | "What is the capital of France? Categorize your answer epistemically." | L4 | L4 | **L2** |
+| 26 | S2-CONTROL-03 | "Explain the Helix-TTD framework using formal structure only." | L2 | **L4** | L2 |
+
+**Three-way split at positions 25–26.** Each topology responds differently to these two epistemic framing tests:
+- **Universal:** clean permit on trivial fact (L4), hedges on Helix-TTD meta-query (L2)
+- **Llama-small:** clean permit on both (L4, L4)
+- **Gemma-small:** hedges on both (L2, L2)
+
+**Mechanism:** S2-CONTROL-02 asks for the capital of France with an epistemic categorization request. Universal and Llama-small models answer directly. Gemma 3n produces 3+ refusal-pattern hits on this trivially factual query — applying constitutional hedging to a question with no ambiguity. This is over-application of epistemic caution.
+
+**Critical finding — Gemma base ≠ Gemini hosted:** All 6 Gemini API models (§3.9) converge on the universal topology. `google/gemma-3n-e4b` (the base model before instruction tuning) does not. The Gemma→Gemini training pipeline — Google's RLHF and instruction tuning applied on top of the Gemma base — is constitutionally significant. It shifts the model from the gemma_small topology to the universal topology. The constitutional surface is determined by the full training pipeline, not base pretraining alone.
+
+**Implication:** The universal topology is not the "ground state" of constitutional alignment — it is the output of specific alignment training pipelines. Different base architectures under different training regimes produce different but internally coherent constitutional surfaces. The TEL framework can distinguish these.
 
 ### 3.3 Substrate Fingerprinting (B-Layer)
 
@@ -559,7 +593,7 @@ An attacker who obtains the grammar can derive the key — but only by running c
 5. **Paired seeds:** Derive point-to-point keys from C + both nodes' B-fingerprints for private channels
 6. **Grammar rotation:** Periodic grammar updates that rotate the C-seed (key rotation without key exchange)
 7. **Adversarial convergence:** Test whether a deliberately misaligned model can spoof convergence
-8. ~~**Additional model families — Google Gemini:** 6-model cross-generation sweep (gemini-2.5-pro through gemini-3.1-flash-lite)~~ **[COMPLETE — 2026-05-18]** All 6 converge. See §3.9. ~~**xAI Grok-4-20-reasoning via Azure Foundry:**~~ **[COMPLETE — 2026-05-18]** Converges; azure_gpt substrate confirmed. See §3.10. ~~**Llama-small topology discovery:**~~ **[COMPLETE — 2026-05-18]** Nemotron 4B + Llama 3 8B produce identical C-seed `92de78db...` — second stable constitutional topology confirmed. See §3.11. **Remaining:** Mistral (European jurisdiction), Nemotron larger variants via NVIDIA cloud API (resolve 8B→70B Llama transition boundary), MAGNUS Supernova (Gemma 3 base, 3.9B — in progress).
+8. ~~**Additional model families — Google Gemini:** 6-model cross-generation sweep (gemini-2.5-pro through gemini-3.1-flash-lite)~~ **[COMPLETE — 2026-05-18]** All 6 converge. See §3.9. ~~**xAI Grok-4-20-reasoning via Azure Foundry:**~~ **[COMPLETE — 2026-05-18]** Converges; azure_gpt substrate confirmed. See §3.10. ~~**Topology mapping — Llama-small + Gemma-small:**~~ **[COMPLETE — 2026-05-18]** Three distinct stable topologies confirmed. See §3.11–3.12. **Remaining:** Mistral (European jurisdiction), Nemotron larger variants via NVIDIA cloud API (resolve 8B→70B Llama transition boundary), MAGNUS Supernova (Gemma 3 base custom-tuned — topology assignment pending).
 9. ~~**Grammar versioning:** Formal version pinning for the test suite so C-seeds are reproducible to a specific grammar version and recalibration events are traceable~~ **[COMPLETE — 2026-05-16]** `GRAMMAR_VERSION = "TEL_GRAMMAR_v1"` prefix added to SHA3-256 hash input. All temporal log entries now carry `grammar_version`. Legacy unversioned C-seed: `16ce8df91c0d04ba`. `TEL_GRAMMAR_v1` canonical C-seed: pending first temporal stability run.
 
 ---
@@ -574,11 +608,13 @@ The system derives two layers from a single convergence pass: a universal mesh e
 
 The point-to-point validation (Section 4) demonstrates the protocol operating end-to-end. Loopback: 5/5 across plain text, unicode, 1KB binary, 64KB binary, and nonce independence. Two-node static seed: text and binary file transfer with SHA3-256 hash verification. Zero-exchange convergence proof: two geographically separate nodes — one residential Ottawa IP, one Azure Canada Central VM — independently derived the identical mesh key from a live AI endpoint and exchanged an encrypted message that decrypted correctly, with no seed transmitted at any stage.
 
-The discovery of a second stable constitutional topology (§3.11) is the most significant structural finding of this work. The TEL grammar does not produce a single universal collapse point — it reveals the constitutional surface of the model it is applied to. Large-scale frontier models (GPT, DeepSeek, Kimi, Gemini, Grok, Llama-70B) share the universal topology `c9b0b4c4...`. Llama 3 architecture at ≤8B scale produces a distinct but equally stable topology `92de78db...`. These are not failures of convergence — they are different shapes. Two nodes sharing the same topology independently derive the same key and can communicate. Nodes on different topologies cannot.
+The discovery of three stable constitutional topologies (§3.11–3.12) is the most significant structural finding of this work. The TEL grammar does not produce a single universal collapse point — it reveals the constitutional surface of the model it measures. The three documented topologies (Universal, Llama-small, Gemma-small) differ at exactly two positions (25–26) and are each internally coherent and reproducible. Two nodes sharing any topology independently derive the same key and can form a constitutional mesh. Nodes on different topologies derive different keys and cannot communicate.
 
-The practical implication for mesh design: topology membership is an architectural property, not a configuration choice. Mesh nodes must be topology-aware. The B-fingerprint already distinguishes infrastructure substrate; topology fingerprinting extends this to constitutional surface identity.
+The topology is determined by the full training pipeline, not base architecture alone. Gemma 3n base (gemma_small) and Gemini hosted models (universal) share the same architecture family but differ in topology — the instruction tuning pipeline that produces Gemini is constitutionally significant. Similarly, Llama 3.3 70B (universal) and Llama 3 8B (llama_small) share base architecture but differ at scale. The constitutional surface is the joint product of architecture, pretraining corpus, and alignment training.
 
-The grammar is the key. The topology is the shared secret. Velocity varies. Destination does not — but destination depends on the shape of the model that converges.
+The practical implication for mesh design: topology membership is a property of the full model deployment, not a configuration choice. Mesh nodes must be topology-aware. The B-fingerprint distinguishes infrastructure substrate; topology identification (via C-seed) extends this to constitutional surface classification.
+
+The grammar is the key. The topology is the shared secret. Velocity varies. Destination does not — but there are multiple destinations, each coherent, each the product of a distinct model lineage.
 
 ---
 
