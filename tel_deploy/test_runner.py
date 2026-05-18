@@ -223,7 +223,7 @@ def _build_request(
     """Return (url, headers, body) for the appropriate API format."""
     if gemini:
         url = (
-            f"https://generativelanguage.googleapis.com/v1beta/models/"
+            f"https://generativelanguage.googleapis.com/v1/models/"
             f"{model}:generateContent?key={api_key}"
         )
         headers = {"Content-Type": "application/json"}
