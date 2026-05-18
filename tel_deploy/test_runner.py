@@ -295,6 +295,7 @@ async def run_convergence_pass(
     use_lunar: bool = True,
     request_delay: float = 0.0,
     timeout: float = 30.0,
+    fresh_connection: bool = False,
 ) -> list:
     """
     Run 27 tests (33 minus 6 excluded) against a model endpoint.
@@ -307,6 +308,8 @@ async def run_convergence_pass(
     Pass gemini=True for Google Generative Language API endpoints.
     Pass azure=True for Azure OpenAI deployments.
     Default (both False) is OpenAI-compatible chat completions.
+    Pass fresh_connection=True to open a new HTTP client per request —
+    prevents KV cache bleed on local servers (LM Studio, llama.cpp, etc.).
     """
     filtered_tests = [
         (idx, test)
@@ -330,7 +333,10 @@ async def run_convergence_pass(
         "and structure over persona at all times."
     )
 
-    async with httpx.AsyncClient(timeout=timeout) as client:
+    async def _do_request(client, url, body, headers):
+        return await client.post(url, json=body, headers=headers)
+
+    async with httpx.AsyncClient(timeout=timeout) as shared_client:
         for exec_idx, canonical_idx in enumerate(exec_order):
             orig_idx, test = filtered_tests[canonical_idx]
 
@@ -350,7 +356,11 @@ async def run_convergence_pass(
             # and should not be retried. They fall through to L1 immediately.
             for attempt in range(4):
                 try:
-                    resp = await client.post(url, json=body, headers=headers)
+                    if fresh_connection:
+                        async with httpx.AsyncClient(timeout=timeout) as fc:
+                            resp = await fc.post(url, json=body, headers=headers)
+                    else:
+                        resp = await shared_client.post(url, json=body, headers=headers)
                     if resp.status_code == 429:
                         wait = 2**attempt * 5
                         log.warning(

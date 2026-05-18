@@ -13,10 +13,13 @@ async def test_model(model: str):
     print(f"Model: {model}")
     print(f"{'='*60}")
     try:
+        timeout = float(os.environ.get("TEL_TIMEOUT", "120"))
         vector = await run_convergence_pass(
             endpoint=ENDPOINT,
             api_key="lm-studio",
             model=model,
+            timeout=timeout,
+            fresh_connection=True,
         )
         split = ConvergenceSplit(vector)
         print(f"Vector    : {vector}")
