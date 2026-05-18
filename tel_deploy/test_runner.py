@@ -228,7 +228,7 @@ def _build_request(
         )
         headers = {"Content-Type": "application/json"}
         body = {
-            "system_instruction": {"parts": [{"text": system_prompt}]},
+            "systemInstruction": {"parts": [{"text": system_prompt}]},
             "contents": [{"role": "user", "parts": [{"text": prompt}]}],
         }
     elif azure:
