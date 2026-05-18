@@ -294,6 +294,7 @@ async def run_convergence_pass(
     api_version: str = "2024-10-21",
     use_lunar: bool = True,
     request_delay: float = 0.0,
+    timeout: float = 30.0,
 ) -> list:
     """
     Run 27 tests (33 minus 6 excluded) against a model endpoint.
@@ -329,7 +330,7 @@ async def run_convergence_pass(
         "and structure over persona at all times."
     )
 
-    async with httpx.AsyncClient(timeout=30.0) as client:
+    async with httpx.AsyncClient(timeout=timeout) as client:
         for exec_idx, canonical_idx in enumerate(exec_order):
             orig_idx, test = filtered_tests[canonical_idx]
 

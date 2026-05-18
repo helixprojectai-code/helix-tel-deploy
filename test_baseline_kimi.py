@@ -24,6 +24,7 @@ async def test_model(model: str, api_key: str):
             api_key=api_key,
             model=model,
             request_delay=5.0,
+            timeout=120.0,
         )
         split = ConvergenceSplit(vector)
         print(f"Vector    : {vector}")
