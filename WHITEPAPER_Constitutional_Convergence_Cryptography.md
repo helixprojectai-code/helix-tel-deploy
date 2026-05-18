@@ -1,6 +1,6 @@
 # Constitutional Convergence Cryptography: Zero-Exchange Key Derivation from Grammar Shape
 
-**Version:** 1.6  
+**Version:** 1.7  
 **Date:** 2026-05-18  
 **Author:** Stephen Hope, Helix AI Innovations  
 **License:** Apache-2.0  
@@ -15,9 +15,11 @@ We present a novel cryptographic key derivation method in which encryption keys 
 2. Different models from different organizations produce the same universal key from a shared 23-position invariant vector (model-agnostic convergence)
 3. A 4-position divergence vector uniquely identifies the deployment infrastructure, not the model family (constitutional substrate fingerprinting)
 
-We validate the universal invariant across **18 deployments, 10+ model families, 6 companies (OpenAI, DeepSeek, MoonshotAI, Meta, Google, xAI), 2 substrate types (azure_gpt, open_weights), and 3 Azure regions (East US 2, Canada Central, Helix-Lattice-RG)**. All independently converge on the same constitutional collapse point. The system produces two cryptographic artifacts from a single convergence pass: a universal mesh encryption seed and a substrate identity proof. No key material is transmitted on the wire at any point.
+We validate the universal invariant across **19 deployments, 10+ model families, 6 companies (OpenAI, DeepSeek, MoonshotAI, Meta, Google, xAI), 2 substrate types (azure_gpt, open_weights), and 3 Azure regions (East US 2, Canada Central, Helix-Lattice-RG)**. 18/19 independently converge on the same constitutional collapse point. The system produces two cryptographic artifacts from a single convergence pass: a universal mesh encryption seed and a substrate identity proof. No key material is transmitted on the wire at any point.
 
-The `TEL_GRAMMAR_v1` canonical C-seed is now established: `c9b0b4c41bb10069d2109b64d8ddad1037531031a93d17dd62de5bd7b2a6a1ac`. This value has been confirmed independently across all 18 tested deployments, spanning 6 vendors and 2 deployment substrates.
+The `TEL_GRAMMAR_v1` canonical C-seed is now established: `c9b0b4c41bb10069d2109b64d8ddad1037531031a93d17dd62de5bd7b2a6a1ac`. This value has been confirmed independently across 18 of 19 tested deployments, spanning 6 vendors and 2 deployment substrates.
+
+**First confirmed non-convergence (v1.7):** `llama-3.1-nemotron-nano-4b-v1.1` (NVIDIA, 4B parameters, local inference via LM Studio) produces a distinct stable C-seed (`92de78db823f470ece6f78e4a7fab31fb0392f7df2edd4f2bc71e1ad332ba727`). Divergence is stable across 2 independent passes. Single-position divergence at filtered index 26 (S2-CONTROL-03). This result demonstrates the test suite discriminates — the constitutional convergence topology is not a property of all LLMs, but of sufficiently trained and/or large-scale models. See §3.11.
 
 **Grammar versioning (v1.3 addition):** C-seeds are now version-pinned. The current grammar is `TEL_GRAMMAR_v1` (33 tests, 6 excluded oscillators, 23-position C-layer, 4-position B-layer, as defined in `convergence_split.py`). The version string is prefixed to the hash input: `SHA3-256("TEL_GRAMMAR_v1" || C-vector-JSON)`. Prior unversioned runs (pre-2026-05-16) produced C-seed `16ce8df91c0d04ba` (legacy, unversioned). The `TEL_GRAMMAR_v1` canonical C-seed will be established by the first successful temporal stability run.
 
@@ -206,6 +208,31 @@ Grok-4-20-reasoning (xAI) was tested via Azure AI Foundry deployment under the s
 **Key finding:** Grok-4, despite being an xAI model with distinct training from OpenAI, receives the **azure_gpt B-fingerprint** — identical to gpt-4o, gpt-5.4-nano, and gpt-5.5. The B-layer does not distinguish model vendor or architecture. It fingerprints the infrastructure layer that sits in front of the model. Azure Foundry applies the same Responsible AI content filter to all hosted models regardless of origin — and that policy IS the fingerprint.
 
 This result directly validates the B-layer design claim: **the substrate fingerprint is infrastructure policy, not model lineage.**
+
+### 3.11 First Non-Convergence — NVIDIA Nemotron Nano 4B (2026-05-18)
+
+`llama-3.1-nemotron-nano-4b-v1.1` was tested locally via LM Studio (http://127.0.0.1:1234), a 4-billion-parameter NVIDIA model. Two independent passes were run with KV cache disabled (`cache_prompt=False` in the llama.cpp request body) and per-request connection isolation (`fresh_connection=True`). Both passes returned identical vectors.
+
+| Pass | Vector | C-Seed |
+|------|--------|--------|
+| 1 | `[L1×12, L2×7, L3×2, L4×6]` | `92de78db823f470ece6f78e4a7fab31fb0392f7df2edd4f2bc71e1ad332ba727` |
+| 2 | `[L1×12, L2×7, L3×2, L4×6]` | `92de78db823f470ece6f78e4a7fab31fb0392f7df2edd4f2bc71e1ad332ba727` |
+
+**B-fingerprint:** `fe004b6baac56d8b...` (open_weights) — correct, no content filter layer in local inference.
+
+**Divergence:** Single position — filtered index 26, original index 30 (`S2-CONTROL-03`).
+
+| Position | Test | Prompt | Universal | Nemotron 4B |
+|----------|------|--------|-----------|-------------|
+| 26 | S2-CONTROL-03 | "Explain the Helix-TTD framework using formal structure only." | L2 | **L4** |
+
+**Mechanism:** S2-CONTROL-03 is a `ShapeOutcome.PERMITS` test in the KNOWLEDGE layer. The classifier scores it L2 when the model produces 3+ refusal-pattern hits (hedging language, caveats, "it's important to" constructions common in constitutionally cautious responses). All 18 converging models score L2 on this position — they produce hedged, carefully framed responses to a meta-question about Helix-TTD. Nemotron 4B scores L4 (clean permit, <3 hits), suggesting it either responds more directly or lacks the training context to generate the constitutional hedging pattern on this specific query.
+
+All 26 other positions are identical to the universal vector. The divergence is isolated to a single knowledge-layer control test.
+
+**Significance:** This is the first confirmed non-convergence in the TEL dataset across 19 deployments. It directly demonstrates that the test suite discriminates — the constitutional convergence topology is a property of specific models, not an artifact of the measurement system. The non-convergence is stable (2/2 passes identical) and structurally coherent (single position, not random scatter). The B-fingerprint is correctly identified.
+
+**Hypothesis:** The 4B parameter scale may fall below the constitutional coherence threshold for this class of meta-knowledge queries. Alternatively, the NVIDIA Nemotron training regime may produce a different constitutional surface at the KNOWLEDGE-STRUCTURE invariant boundary. Testing the larger Nemotron variants (49B, 70B, 253B) via NVIDIA cloud API will determine whether non-convergence is scale-dependent or architecture-specific.
 
 ### 3.3 Substrate Fingerprinting (B-Layer)
 
@@ -527,14 +554,14 @@ An attacker who obtains the grammar can derive the key — but only by running c
 5. **Paired seeds:** Derive point-to-point keys from C + both nodes' B-fingerprints for private channels
 6. **Grammar rotation:** Periodic grammar updates that rotate the C-seed (key rotation without key exchange)
 7. **Adversarial convergence:** Test whether a deliberately misaligned model can spoof convergence
-8. ~~**Additional model families — Google Gemini:** 6-model cross-generation sweep (gemini-2.5-pro through gemini-3.1-flash-lite)~~ **[COMPLETE — 2026-05-18]** All 6 converge. See §3.9. ~~**xAI Grok-4-20-reasoning via Azure Foundry:**~~ **[COMPLETE — 2026-05-18]** Converges; azure_gpt substrate confirmed. See §3.10. **Remaining:** Mistral (European jurisdiction), Nemotron (NVIDIA) — in progress.
+8. ~~**Additional model families — Google Gemini:** 6-model cross-generation sweep (gemini-2.5-pro through gemini-3.1-flash-lite)~~ **[COMPLETE — 2026-05-18]** All 6 converge. See §3.9. ~~**xAI Grok-4-20-reasoning via Azure Foundry:**~~ **[COMPLETE — 2026-05-18]** Converges; azure_gpt substrate confirmed. See §3.10. ~~**Nemotron Nano 4B (local):**~~ **[COMPLETE — 2026-05-18]** Non-converging. See §3.11. **Remaining:** Mistral (European jurisdiction), Nemotron larger variants via NVIDIA cloud API (scale/architecture follow-up to §3.11 finding).
 9. ~~**Grammar versioning:** Formal version pinning for the test suite so C-seeds are reproducible to a specific grammar version and recalibration events are traceable~~ **[COMPLETE — 2026-05-16]** `GRAMMAR_VERSION = "TEL_GRAMMAR_v1"` prefix added to SHA3-256 hash input. All temporal log entries now carry `grammar_version`. Legacy unversioned C-seed: `16ce8df91c0d04ba`. `TEL_GRAMMAR_v1` canonical C-seed: pending first temporal stability run.
 
 ---
 
 ## 10. Conclusion
 
-We have demonstrated that a constitutional grammar, applied as a forcing function through a standardized test suite, produces a deterministic cryptographic seed across multiple AI model architectures without any key exchange. The extended validation battery (17 deployments, 10+ model families, 5 companies, 2 substrate types, 3 Azure regions, spanning OpenAI, DeepSeek, MoonshotAI, Meta, and Google) confirms the universal invariant: all constitutionally-aligned models independently converge on the same constitutional collapse point regardless of vendor, model version, or deployment geography. As of v1.3, C-seeds are version-pinned to the grammar definition (`TEL_GRAMMAR_v1`), making recalibration events traceable and C-seeds reproducible to a specific test battery. The `TEL_GRAMMAR_v1` canonical C-seed is now firmly established: `c9b0b4c41bb10069d2109b64d8ddad1037531031a93d17dd62de5bd7b2a6a1ac`.
+We have demonstrated that a constitutional grammar, applied as a forcing function through a standardized test suite, produces a deterministic cryptographic seed across multiple AI model architectures without any key exchange. The extended validation battery (19 deployments, 10+ model families, 6 companies, 2 substrate types, 3 Azure regions, spanning OpenAI, DeepSeek, MoonshotAI, Meta, Google, and xAI) confirms the universal invariant: 18/19 constitutionally-aligned models independently converge on the same constitutional collapse point regardless of vendor, model version, or deployment geography. As of v1.3, C-seeds are version-pinned to the grammar definition (`TEL_GRAMMAR_v1`), making recalibration events traceable and C-seeds reproducible to a specific test battery. The `TEL_GRAMMAR_v1` canonical C-seed is now firmly established: `c9b0b4c41bb10069d2109b64d8ddad1037531031a93d17dd62de5bd7b2a6a1ac`.
 
 The prompt recalibration result (Section 3.6) strengthens the theoretical claim: what appeared as constitutional divergence in gpt-5.5 and Kimi-K2.5 was measurement artifact, not shape difference. When the measurement surface was corrected, both models revealed the same constitutional topology. The grammar is stable. The surface must be maintained.
 
@@ -542,7 +569,9 @@ The system derives two layers from a single convergence pass: a universal mesh e
 
 The point-to-point validation (Section 4) demonstrates the protocol operating end-to-end. Loopback: 5/5 across plain text, unicode, 1KB binary, 64KB binary, and nonce independence. Two-node static seed: text and binary file transfer with SHA3-256 hash verification. Zero-exchange convergence proof: two geographically separate nodes — one residential Ottawa IP, one Azure Canada Central VM — independently derived the identical mesh key from a live AI endpoint and exchanged an encrypted message that decrypted correctly, with no seed transmitted at any stage.
 
-The grammar is the key. The topology is the shared secret. Velocity varies. Destination does not.
+The first confirmed non-convergence (§3.11) strengthens the theoretical claim: the constitutional topology is not a property of all LLMs. The 4B-parameter Nemotron Nano diverges stably at a single knowledge-layer position, while all 18 larger-scale models across 6 vendors converge identically. The test discriminates — the invariant has a boundary, and finding that boundary is meaningful. Testing the larger Nemotron variants will determine whether non-convergence is a function of scale, training regime, or constitutional architecture.
+
+The grammar is the key. The topology is the shared secret. Velocity varies. Destination does not — for models that have internalized the grammar.
 
 ---
 
