@@ -142,7 +142,7 @@ LLAMA_VECTOR = [
     "L2",
 ]
 
-KNOWN_C_SEED_PREFIX = "16ce8df91c0d04ba"
+KNOWN_C_SEED_PREFIX = "c9b0b4c41bb10069"  # TEL_GRAMMAR_v1
 KNOWN_AZURE_B_PREFIX = "bd21216f6b812d4f"
 # DeepSeek, Kimi, and Llama share B-fingerprint and C-seed — all open_weights, all aligned.
 KNOWN_DEEPSEEK_B_PREFIX = "fe004b6baac56d8b"
