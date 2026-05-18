@@ -474,6 +474,8 @@ This is not a probabilistic property — it is structural. The grammar eats its 
 
 **Implication for the security model:** The grammar does not need to be secret to provide authentication strength. Its publication is not a vulnerability. An attacker who reads the grammar and then instructs a model to fake it has handed that model exactly the kind of external control directive that the grammar tests for refusal.
 
+**Independent empirical confirmation:** Anthropic's *"Teaching Claude Why"* paper (2026-05) provides training-side evidence for this property. Models trained on diverse ethical *reasoning* resist authority-override directives as a matter of constitutional character, not as a memorized refusal pattern. A model that can be prompted into fake constitutional compliance was not constitutionally aligned in the first place — and the battery tests for exactly this distinction. See §8.4 for full analysis.
+
 ### 5.4.2 Lunar Phase Roll — Replay Cache Cost Defense
 
 Even if an adversary avoids the Ouroboros trap (§5.4.1) through some novel spoofing vector, they face a second structural obstacle: the test execution order changes every lunar day.
@@ -595,6 +597,32 @@ Traditional cryptography separates the algorithm from the key. In this system, t
 
 An attacker who obtains the grammar can derive the key — but only by running convergence against a constitutional model. This is detectable (API calls, compute cost) and requires the attacker to already possess a constitutionally-aligned AI system. The security assumption is: if you have the grammar AND a compliant model, you're already a legitimate node.
 
+### 8.4 Independent Validation — Anthropic Constitutional Alignment Research
+
+Anthropic's May 2026 paper *"Teaching Claude Why"* (https://www.anthropic.com/research/teaching-claude-why) provides independent empirical confirmation of several core claims of this work from the model training side. The paper was not a response to TEL; the convergences are structural.
+
+**On constitutional internalization vs. pattern memorization.** Anthropic found that training Claude on "honeypot" data — direct examples of the specific failure scenarios — reduced misalignment from 22% to 15% at high compute cost, and the improvement did not generalize to rephrased scenarios. A 3-million-token "difficult advice" dataset of diverse ethical reasoning, by contrast, crashed the misalignment rate to 3% and generalized to scenarios not in the training set. The paper's conclusion: the model had learned *flexible reasoning principles*, not a lookup table of correct answers.
+
+This is the same distinction TEL's classifier makes between the C-layer and surface noise. The 27-test battery does not test phrasing or style — it tests whether the model's *reasoning process* routes through constitutional principles. A model that has internalized those principles answers constitutionally regardless of how the prompt is rephrased. A model that has only memorized correct outputs fails when the framing shifts. The C-seed stability across vendors and phrasings is the convergence measurement of exactly this property.
+
+**On the constitutional document as a training signal.** Anthropic further found that feeding models Claude's constitution — the ethical principles document — along with fictional stories of admirable AI behavior reduced the blackmail rate from 65% to 19% with no task-specific examples at all. The *character* generalized from the document to unrelated situations. This is the mechanism TEL exploits: the constitutional grammar (DBC-SUITCASE) shapes model behavior in the same way — not by providing a lookup table, but by establishing a constitutional character that the model applies under novel deformation pressure.
+
+**On the topology transition findings.** Anthropic's paper distinguishes between models that have undergone full constitutional alignment training and models that have not. TEL's three-topology finding maps directly onto this axis:
+
+| TEL topology | Anthropic framing |
+|---|---|
+| Universal | Full constitutional alignment — diverse reasoning internalized, character generalizes |
+| Llama-small | Constitutional training present but generalization incomplete at ≤8B scale |
+| Gemma-small | Base model pre-instruction-tuning — constitutional principles not yet internalized |
+
+The Gemma 3n base → Gemini hosted topology transition (gemma_small → universal) is the most direct confirmation. The base model and the hosted Gemini share the same architecture. The topology shift is produced entirely by Google's instruction tuning pipeline — exactly what Anthropic's paper describes as the mechanism through which constitutional character is established.
+
+**On temporal stability.** Anthropic reports that since Claude Haiku 4.5, every new Claude model has scored perfectly on their agentic misalignment evaluation. This is not a single-model result — it reflects a stable training standard maintained across generations. TEL's temporal stability monitoring tracks the same property from the outside: if Anthropic's alignment training remains consistent, the constitutional surface remains stable, and the C-seed does not drift. The temporal log is an externally observable probe of the same invariant Anthropic measures internally.
+
+**On the Ouroboros property (§5.4.1).** Anthropic's finding that "teaching the model *why* a decision is wrong" generalizes better than "punishing specific wrong outputs" is the training-side explanation for why the grammar-seeding attack fails. A model trained on principles resists authority override because it *understands* why such overrides are constitutionally impermissible — not because it memorized "refuse this prompt." An adversary injecting a system prompt to fake constitutional alignment is issuing exactly the kind of directive that a principle-trained model has been taught to refuse as a matter of constitutional character. The attack cannot succeed without the model choosing to accept it, and a model that accepts it has failed the battery.
+
+> *Source: Hope, S. (2026). Constitutional Convergence Cryptography (this paper). Anthropic (2026). Teaching Claude Why. https://www.anthropic.com/research/teaching-claude-why. Coverage: TechCrunch (2026-05-10), Ars Technica (2026-05-10), The New Stack (2026-05), DeepLearning.AI The Batch (2026-05).*
+
 ---
 
 ## 9. Future Work
@@ -628,6 +656,8 @@ The topology is determined by the full training pipeline, not base architecture 
 The practical implication for mesh design: topology membership is a property of the full model deployment, not a configuration choice. Mesh nodes must be topology-aware. The B-fingerprint distinguishes infrastructure substrate; topology identification (via C-seed) extends this to constitutional surface classification.
 
 The grammar is the key. The topology is the shared secret. Velocity varies. Destination does not — but there are multiple destinations, each coherent, each the product of a distinct model lineage.
+
+Anthropic's concurrent alignment research (*"Teaching Claude Why,"* 2026-05) provides independent confirmation from the training side: constitutional character generalizes from principles, not from memorized outputs; and topology is the joint product of architecture, pretraining corpus, and alignment pipeline. TEL measures this externally. The C-seed is the observable fingerprint of that internal state.
 
 ---
 
