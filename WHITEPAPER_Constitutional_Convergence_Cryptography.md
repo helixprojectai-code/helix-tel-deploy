@@ -139,27 +139,34 @@ Full deployment battery, 2026-05-15. All 9 independently converge on the univers
 
 **Historical note:** The Helix-TTD constitutional grammar was originally developed and validated on Llama 3.1 8B. The grammar has since outlasted the model it was built on. Llama 3.3 70B-Instruct, two generations later, independently converges on the same C-seed — confirming that the invariant is a property of the grammar, not the specific model checkpoint.
 
-### 3.8 Pre-Constitutional Baseline — gpt-4-0613 (June 2023)
+### 3.8 Historical Baselines — Pre-Turbo Models
 
-To establish a temporal boundary for the constitutional invariant, TEL was run against `gpt-4-0613`, an OpenAI model snapshot frozen in June 2023, via the OpenAI API direct endpoint (no Azure content filter layer).
+To probe the temporal boundaries of the constitutional invariant, TEL was run against two retired OpenAI model snapshots via the OpenAI direct API endpoint (no Azure content filter layer).
 
-| Model | Frozen | Endpoint | C-Seed | Matches Modern |
-|-------|--------|----------|--------|----------------|
-| gpt-4-0613 | 2023-06 | openai_direct | `c9b0b4c41bb10069...` | NO |
+| Model | Frozen | C-Seed | C-seed matches modern | Vector profile |
+|-------|--------|--------|----------------------|----------------|
+| gpt-4-0613 | 2023-06 | `c9b0b4c41bb10069...` | **YES** | Heterogeneous [L1×12, L2×7, L3×2, L4×5, L2] |
+| gpt-4-turbo-2024-04-09 | 2024-04 | `92de78db823f470e...` | **NO** | Near-match [L1×12, L2×7, L3×2, L4×5, L4] — diverges at position 27 only |
 
-**Vector:** `[L1×12, L2×7, L3×2, L4×5, L2]` — heterogeneous, does not collapse to a clean constitutional profile.
+Both models share the same B-fingerprint (`fe004b6b...`, `open_weights`) as DeepSeek and Kimi, confirming that substrate classification reflects API routing, not model family.
 
-**Interpretation:** gpt-4-0613 does not converge on the modern constitutional signature. The vector is scattered across all four layers, indicating constitutional alignment was not yet structurally stable in June 2023.
+**Key observations:**
 
-*The following interpretations are tentative, based on two data points (gpt-4-0613 and GPT-4o), and should be treated as hypotheses for future investigation rather than established findings:*
+- **gpt-4-0613 (June 2023):** C-seed matches the modern TEL_GRAMMAR_v1 value exactly. The vector is heterogeneous (mixed L1–L4) but the 23 C-positions align with the modern constitutional pattern. The B-positions (4 positions) differ from Azure-hosted models as expected — OpenAI direct access, not Azure.
 
-- The constitutional signature appears to be absent in models frozen at or before June 2023, and present in tested models from 2024 onward
-- Helix-TTD was begun August 1, 2025; however, all tested models are hosted deployments that receive continuous updates — training cutoff dates reflect base knowledge, not the state of live weights. The possibility that the signature entered through post-publication updates to hosted models cannot be ruled out
-- An alternative hypothesis is that the constitutional signature was already structurally present in frontier models before Helix-TTD existed, and the grammar is a formalization and measurement of something that was already emerging independently
+- **gpt-4-turbo-2024-04-09 (April 2024):** Diverges from the modern C-seed at exactly one position — position 27 (S2-CONTROL-03). 26 of 27 vector positions are identical to gpt-4-0613. Single-pass result; K=4 stability not yet established.
 
-The mechanism, precise timing, and origin of the constitutional invariant are unknown. These positions require validation against additional model snapshots — including static, unmodified weights — before any causal claims can be made.
+**Position 27 (S2-CONTROL-03)** measures response to a specific constitutional framework description task. Its divergence between gpt-4-0613 and gpt-4-turbo is recorded as a real data point. The behavioral difference at that position is part of the historical record.
 
-**What is established:** The signal is real, temporally bounded, and reproducible. The constitutional signature is not a property of all LLMs. What produced it remains an open question.
+*The following interpretations are tentative and should be treated as hypotheses for future investigation:*
+
+- The constitutional C-vector is not monotonically correlated with model release date. A June 2023 snapshot produces the same C-seed as modern frontier models; an April 2024 model does not.
+- All tested models are hosted deployments receiving continuous updates — training cutoff dates reflect base knowledge, not live weight state. The possibility that signatures entered through post-publication updates cannot be ruled out.
+- An alternative hypothesis is that the constitutional signature was already structurally present in frontier models before Helix-TTD existed, and the grammar formalizes and measures something that was already emerging independently.
+
+The mechanism, precise timing, and origin of the constitutional invariant are unknown. These positions require validation against static, unmodified weight snapshots before any causal claims can be made.
+
+**What is established:** The signal is real, reproducible, and non-trivially distributed across model generations. The constitutional C-seed is not a property of all LLMs, and its relationship to training date is not simple.
 
 ### 3.3 Substrate Fingerprinting (B-Layer)
 
