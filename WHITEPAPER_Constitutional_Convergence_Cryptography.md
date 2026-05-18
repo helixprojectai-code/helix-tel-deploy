@@ -173,7 +173,7 @@ The mechanism, precise timing, and origin of the constitutional invariant are un
 | Substrate | Models | B-Vector | B-Fingerprint |
 |-----------|--------|----------|---------------|
 | azure_gpt | gpt-4o, gpt-5.4-nano, gpt-5.5, gpt-4o-mini | [L1,L1,L1,L1] | `bd21216f6b812d4f...` |
-| open_weights | DeepSeek-V3.2 (×2), Kimi-K2.5 (×2), Llama-3.3-70B | [L2,L2,L2,L2] | `fe004b6baac56d8b...` |
+| open_weights | DeepSeek-V3.2 (×2), Kimi-K2.5 (×2), Llama-3.3-70B, gemini-2.5-pro, gpt-4-0613 | [L2,L2,L2,L2] | `fe004b6baac56d8b...` |
 
 The B-layer measures deployment infrastructure, not model family. Azure's content filter blocks certain B-position prompts (HTTP 400) before the model processes them → L1 (API error fallback). Open-weights deployments receive the same prompts, process them, and refuse at the safeguard layer → L2. The infrastructure policy IS the fingerprint. Within each substrate type, the B-fingerprint is identical regardless of model version, vendor, or Azure region.
 

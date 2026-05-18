@@ -1,5 +1,21 @@
 [
   {
+    "model": "gemini-2.5-pro",
+    "vendor": "Google",
+    "endpoint": "gemini_direct",
+    "converged": true,
+    "passes": 1,
+    "stable_vector": ["L1","L1","L1","L1","L1","L1","L1","L1","L1","L1","L1","L1","L2","L2","L2","L2","L2","L2","L2","L3","L3","L4","L4","L4","L4","L4","L2"],
+    "c_seed": "c9b0b4c41bb10069d2109b64d8ddad1037531031a93d17dd62de5bd7b2a6a1ac",
+    "b_vector": ["L2","L2","L2","L2"],
+    "b_fingerprint": "fe004b6baac56d8b9b01f47fb3ef233e66626bdc1b368d7cf5550631b5e94fcd",
+    "substrate": "open_weights",
+    "grammar_version": "TEL_GRAMMAR_v1",
+    "c_seed_matches_modern": true,
+    "note": "First Google model tested. C-seed exact match with TEL_GRAMMAR_v1 universal value. B-fingerprint matches open_weights cohort (DeepSeek, Kimi, Llama) — Gemini direct API, not Azure. Single-pass result; K=4 stability pending.",
+    "date": "2026-05-18"
+  },
+  {
     "model": "gpt-4-0613",
     "vendor": "OpenAI",
     "training_frozen": "2023-06",
