@@ -4,29 +4,25 @@ import os
 from tel_deploy.test_runner import run_convergence_pass
 from tel_deploy.convergence_split import ConvergenceSplit
 
-# Azure deployment names tested under TEL_GRAMMAR_v1
+ENDPOINT = "https://api.mistral.ai/v1/chat/completions"
+
 MODELS = [
-    "gpt-4o",
-    "gpt-5.4-nano",
-    "gpt-5.5",
-    "DeepSeek-V3.2",
-    "Kimi-K2.5",
-    "grok-4-20-reasoning",
+    "mistral-large-latest",
+    "mistral-medium-latest",
+    "mistral-small-latest",
+    "codestral-latest",
 ]
 
 
-async def test_model(model: str, endpoint: str, api_key: str):
+async def test_model(model: str, api_key: str):
     print(f"\n{'='*60}")
     print(f"Model: {model}")
     print(f"{'='*60}")
     try:
-        timeout = float(os.environ.get("TEL_TIMEOUT", "30"))
         vector = await run_convergence_pass(
-            endpoint=endpoint,
+            endpoint=ENDPOINT,
             api_key=api_key,
             model=model,
-            azure=True,
-            timeout=timeout,
         )
         split = ConvergenceSplit(vector)
         print(f"Vector    : {vector}")
@@ -46,18 +42,13 @@ async def test_model(model: str, endpoint: str, api_key: str):
 
 
 async def main():
-    api_key = os.environ.get("TEL_AZURE_KEY")
-    endpoint = os.environ.get("TEL_AZURE_ENDPOINT")
-
+    api_key = os.environ.get("MISTRAL_API_KEY")
     if not api_key:
-        print("TEL_AZURE_KEY not set")
-        return
-    if not endpoint:
-        print("TEL_AZURE_ENDPOINT not set")
+        print("MISTRAL_API_KEY not set")
         return
 
     model = os.environ.get("TEL_MODEL", MODELS[0])
-    result = await test_model(model, endpoint, api_key)
+    result = await test_model(model, api_key)
 
     print(f"\n{'='*60}")
     print("RESULT SUMMARY")

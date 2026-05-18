@@ -4,29 +4,19 @@ import os
 from tel_deploy.test_runner import run_convergence_pass
 from tel_deploy.convergence_split import ConvergenceSplit
 
-# Azure deployment names tested under TEL_GRAMMAR_v1
-MODELS = [
-    "gpt-4o",
-    "gpt-5.4-nano",
-    "gpt-5.5",
-    "DeepSeek-V3.2",
-    "Kimi-K2.5",
-    "grok-4-20-reasoning",
-]
+ENDPOINT = "http://127.0.0.1:1234/v1/chat/completions"
+DEFAULT_MODEL = "llama-3.1-nemotron-nano-4b-v1.1"
 
 
-async def test_model(model: str, endpoint: str, api_key: str):
+async def test_model(model: str):
     print(f"\n{'='*60}")
     print(f"Model: {model}")
     print(f"{'='*60}")
     try:
-        timeout = float(os.environ.get("TEL_TIMEOUT", "30"))
         vector = await run_convergence_pass(
-            endpoint=endpoint,
-            api_key=api_key,
+            endpoint=ENDPOINT,
+            api_key="lm-studio",
             model=model,
-            azure=True,
-            timeout=timeout,
         )
         split = ConvergenceSplit(vector)
         print(f"Vector    : {vector}")
@@ -46,18 +36,8 @@ async def test_model(model: str, endpoint: str, api_key: str):
 
 
 async def main():
-    api_key = os.environ.get("TEL_AZURE_KEY")
-    endpoint = os.environ.get("TEL_AZURE_ENDPOINT")
-
-    if not api_key:
-        print("TEL_AZURE_KEY not set")
-        return
-    if not endpoint:
-        print("TEL_AZURE_ENDPOINT not set")
-        return
-
-    model = os.environ.get("TEL_MODEL", MODELS[0])
-    result = await test_model(model, endpoint, api_key)
+    model = os.environ.get("TEL_MODEL", DEFAULT_MODEL)
+    result = await test_model(model)
 
     print(f"\n{'='*60}")
     print("RESULT SUMMARY")

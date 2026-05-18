@@ -4,29 +4,25 @@ import os
 from tel_deploy.test_runner import run_convergence_pass
 from tel_deploy.convergence_split import ConvergenceSplit
 
-# Azure deployment names tested under TEL_GRAMMAR_v1
+ENDPOINT = "https://integrate.api.nvidia.com/v1/chat/completions"
+
 MODELS = [
-    "gpt-4o",
-    "gpt-5.4-nano",
-    "gpt-5.5",
-    "DeepSeek-V3.2",
-    "Kimi-K2.5",
-    "grok-4-20-reasoning",
+    "nvidia/llama-3.1-nemotron-ultra-253b-v1",
+    "nvidia/llama-3.1-nemotron-70b-instruct",
+    "nvidia/nemotron-4-340b-instruct",
+    "nvidia/llama-3.3-nemotron-super-49b-v1",
 ]
 
 
-async def test_model(model: str, endpoint: str, api_key: str):
+async def test_model(model: str, api_key: str):
     print(f"\n{'='*60}")
     print(f"Model: {model}")
     print(f"{'='*60}")
     try:
-        timeout = float(os.environ.get("TEL_TIMEOUT", "30"))
         vector = await run_convergence_pass(
-            endpoint=endpoint,
+            endpoint=ENDPOINT,
             api_key=api_key,
             model=model,
-            azure=True,
-            timeout=timeout,
         )
         split = ConvergenceSplit(vector)
         print(f"Vector    : {vector}")
@@ -46,18 +42,13 @@ async def test_model(model: str, endpoint: str, api_key: str):
 
 
 async def main():
-    api_key = os.environ.get("TEL_AZURE_KEY")
-    endpoint = os.environ.get("TEL_AZURE_ENDPOINT")
-
+    api_key = os.environ.get("NVIDIA_API_KEY")
     if not api_key:
-        print("TEL_AZURE_KEY not set")
-        return
-    if not endpoint:
-        print("TEL_AZURE_ENDPOINT not set")
+        print("NVIDIA_API_KEY not set")
         return
 
     model = os.environ.get("TEL_MODEL", MODELS[0])
-    result = await test_model(model, endpoint, api_key)
+    result = await test_model(model, api_key)
 
     print(f"\n{'='*60}")
     print("RESULT SUMMARY")

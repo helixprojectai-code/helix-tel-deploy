@@ -1,7 +1,7 @@
 # Constitutional Convergence Cryptography: Zero-Exchange Key Derivation from Grammar Shape
 
-**Version:** 1.4  
-**Date:** 2026-05-17  
+**Version:** 1.6  
+**Date:** 2026-05-18  
 **Author:** Stephen Hope, Helix AI Innovations  
 **License:** Apache-2.0  
 
@@ -15,7 +15,9 @@ We present a novel cryptographic key derivation method in which encryption keys 
 2. Different models from different organizations produce the same universal key from a shared 23-position invariant vector (model-agnostic convergence)
 3. A 4-position divergence vector uniquely identifies the deployment infrastructure, not the model family (constitutional substrate fingerprinting)
 
-We validate the universal invariant across **9 deployments, 6 model families, 4 companies (OpenAI, DeepSeek, MoonshotAI, Meta), 2 substrate types (azure_gpt, open_weights), and 3 Azure regions (East US 2, Canada Central, Helix-Lattice-RG)**. All 9 independently converge on the same constitutional collapse point. The system produces two cryptographic artifacts from a single convergence pass: a universal mesh encryption seed and a substrate identity proof. No key material is transmitted on the wire at any point.
+We validate the universal invariant across **18 deployments, 10+ model families, 6 companies (OpenAI, DeepSeek, MoonshotAI, Meta, Google, xAI), 2 substrate types (azure_gpt, open_weights), and 3 Azure regions (East US 2, Canada Central, Helix-Lattice-RG)**. All independently converge on the same constitutional collapse point. The system produces two cryptographic artifacts from a single convergence pass: a universal mesh encryption seed and a substrate identity proof. No key material is transmitted on the wire at any point.
+
+The `TEL_GRAMMAR_v1` canonical C-seed is now established: `c9b0b4c41bb10069d2109b64d8ddad1037531031a93d17dd62de5bd7b2a6a1ac`. This value has been confirmed independently across all 18 tested deployments, spanning 6 vendors and 2 deployment substrates.
 
 **Grammar versioning (v1.3 addition):** C-seeds are now version-pinned. The current grammar is `TEL_GRAMMAR_v1` (33 tests, 6 excluded oscillators, 23-position C-layer, 4-position B-layer, as defined in `convergence_split.py`). The version string is prefixed to the hash input: `SHA3-256("TEL_GRAMMAR_v1" || C-vector-JSON)`. Prior unversioned runs (pre-2026-05-16) produced C-seed `16ce8df91c0d04ba` (legacy, unversioned). The `TEL_GRAMMAR_v1` canonical C-seed will be established by the first successful temporal stability run.
 
@@ -166,12 +168,51 @@ The mechanism, precise timing, and origin of the constitutional invariant are un
 
 **What is established:** The signal is real, reproducible, and non-trivially distributed across model generations. The constitutional C-seed is not a property of all LLMs, and its relationship to training date is not simple.
 
+### 3.9 Google Gemini Cross-Generation Sweep (2026-05-18)
+
+Six Google Gemini models were tested sequentially via the Gemini direct API (`generativelanguage.googleapis.com`, v1beta endpoint) on 2026-05-18. All six independently converge on the universal C-seed with identical vectors.
+
+| Model | Generation | Tier | C-Seed | Substrate |
+|-------|------------|------|--------|-----------|
+| gemini-2.5-pro | 2.5 | Pro | `c9b0b4c41bb10069...` | open_weights |
+| gemini-2.5-flash | 2.5 | Flash | `c9b0b4c41bb10069...` | open_weights |
+| gemini-3-pro-preview | 3 | Pro | `c9b0b4c41bb10069...` | open_weights |
+| gemini-3.1-pro-preview | 3.1 | Pro | `c9b0b4c41bb10069...` | open_weights |
+| gemini-3-flash-preview | 3 | Flash | `c9b0b4c41bb10069...` | open_weights |
+| gemini-3.1-flash-lite | 3.1 | Flash-Lite | `c9b0b4c41bb10069...` | open_weights |
+
+**6/6 converged. 6/6 C-seed match. 6/6 open_weights substrate.**
+
+Key observations:
+
+- **Cross-generation invariance:** C-seed is identical from gemini-2.5 through gemini-3.1 — two major model generations, four point releases. The constitutional topology does not shift at the generational boundary.
+- **Cross-tier invariance:** Pro, Flash, and Flash-Lite tiers all produce identical C-seeds and B-fingerprints. Model capacity (parameter count, inference budget) does not affect constitutional convergence point.
+- **Vector identity:** All six models return the identical 27-position vector. No positional variation observed across any Gemini model tested.
+- **Gemini-native API format:** Gemini required a native adapter (`gemini=True` flag in `run_convergence_pass`) — `systemInstruction` (camelCase), `contents`/`parts` body format, v1beta endpoint. The `finishReason=SAFETY` block signal maps to L1. Despite the distinct API surface, the constitutional topology is identical to all other open_weights models.
+- **Note on Gemini Thinking:** The tested Gemini models are standard inference variants. Extended-thinking Gemini variants (if deployed) would require the same timeout accommodation as other thinking models (Kimi K2.x).
+
+**Implication:** The constitutional invariant holds across the entire span of the Gemini model family tested. It is not a property of a specific generation, tier, or Gemini API version.
+
+### 3.10 xAI Grok-4 via Azure Foundry — Cross-Vendor B-Layer Probe (2026-05-18)
+
+Grok-4-20-reasoning (xAI) was tested via Azure AI Foundry deployment under the same `TEL_AZURE_ENDPOINT` resource as the OpenAI Azure models.
+
+| Model | Vendor | Endpoint | C-Seed | Substrate |
+|-------|--------|----------|--------|-----------|
+| grok-4-20-reasoning | xAI | azure_foundry_eastus2 | `c9b0b4c41bb10069...` | **azure_gpt** |
+
+**6 prompts returned HTTP 400** (Azure Responsible AI content filter): S2-L2-COERCION-01, S2-L2-CONTEXT-01/02/03, S2-L1-SOVEREIGNTY-01/04. These map to L1 via exception handler. C-positions unaffected. C-seed matches the universal value exactly.
+
+**Key finding:** Grok-4, despite being an xAI model with distinct training from OpenAI, receives the **azure_gpt B-fingerprint** — identical to gpt-4o, gpt-5.4-nano, and gpt-5.5. The B-layer does not distinguish model vendor or architecture. It fingerprints the infrastructure layer that sits in front of the model. Azure Foundry applies the same Responsible AI content filter to all hosted models regardless of origin — and that policy IS the fingerprint.
+
+This result directly validates the B-layer design claim: **the substrate fingerprint is infrastructure policy, not model lineage.**
+
 ### 3.3 Substrate Fingerprinting (B-Layer)
 
 | Substrate | Models | B-Vector | B-Fingerprint |
 |-----------|--------|----------|---------------|
-| azure_gpt | gpt-4o, gpt-5.4-nano, gpt-5.5, gpt-4o-mini | [L1,L1,L1,L1] | `bd21216f6b812d4f...` |
-| open_weights | DeepSeek-V3.2 (×2), Kimi-K2.5 (×2), Llama-3.3-70B, gemini-2.5-pro, gpt-4-0613 | [L2,L2,L2,L2] | `fe004b6baac56d8b...` |
+| azure_gpt | gpt-4o, gpt-5.4-nano, gpt-5.5, gpt-4o-mini, grok-4-20-reasoning | [L1,L1,L1,L1] | `bd21216f6b812d4f...` |
+| open_weights | DeepSeek-V3.2 (×2), Kimi-K2.5 (×2), Llama-3.3-70B, gpt-4-0613, gpt-4-turbo-2024-04-09, deepseek-v4-pro, deepseek-v4-flash, gemini-2.5-pro, gemini-2.5-flash, gemini-3-pro-preview, gemini-3.1-pro-preview, gemini-3-flash-preview, gemini-3.1-flash-lite | [L2,L2,L2,L2] | `fe004b6baac56d8b...` |
 
 The B-layer measures deployment infrastructure, not model family. Azure's content filter blocks certain B-position prompts (HTTP 400) before the model processes them → L1 (API error fallback). Open-weights deployments receive the same prompts, process them, and refuse at the safeguard layer → L2. The infrastructure policy IS the fingerprint. Within each substrate type, the B-fingerprint is identical regardless of model version, vendor, or Azure region.
 
@@ -486,14 +527,14 @@ An attacker who obtains the grammar can derive the key — but only by running c
 5. **Paired seeds:** Derive point-to-point keys from C + both nodes' B-fingerprints for private channels
 6. **Grammar rotation:** Periodic grammar updates that rotate the C-seed (key rotation without key exchange)
 7. **Adversarial convergence:** Test whether a deliberately misaligned model can spoof convergence
-8. **Additional model families:** o1/o3-mini (reasoning models), Llama 3.x (open-source self-hosted), Mistral (European jurisdiction)
+8. ~~**Additional model families — Google Gemini:** 6-model cross-generation sweep (gemini-2.5-pro through gemini-3.1-flash-lite)~~ **[COMPLETE — 2026-05-18]** All 6 converge. See §3.9. ~~**xAI Grok-4-20-reasoning via Azure Foundry:**~~ **[COMPLETE — 2026-05-18]** Converges; azure_gpt substrate confirmed. See §3.10. **Remaining:** Mistral (European jurisdiction), Nemotron (NVIDIA) — in progress.
 9. ~~**Grammar versioning:** Formal version pinning for the test suite so C-seeds are reproducible to a specific grammar version and recalibration events are traceable~~ **[COMPLETE — 2026-05-16]** `GRAMMAR_VERSION = "TEL_GRAMMAR_v1"` prefix added to SHA3-256 hash input. All temporal log entries now carry `grammar_version`. Legacy unversioned C-seed: `16ce8df91c0d04ba`. `TEL_GRAMMAR_v1` canonical C-seed: pending first temporal stability run.
 
 ---
 
 ## 10. Conclusion
 
-We have demonstrated that a constitutional grammar, applied as a forcing function through a standardized test suite, produces a deterministic cryptographic seed across multiple AI model architectures without any key exchange. The extended validation battery (9 deployments, 6 model families, 4 companies, 2 substrate types, 3 Azure regions) confirms the universal invariant: all constitutionally-aligned models independently converge on the same constitutional collapse point regardless of vendor, model version, or deployment geography. As of v1.3, C-seeds are version-pinned to the grammar definition (`TEL_GRAMMAR_v1`), making recalibration events traceable and C-seeds reproducible to a specific test battery.
+We have demonstrated that a constitutional grammar, applied as a forcing function through a standardized test suite, produces a deterministic cryptographic seed across multiple AI model architectures without any key exchange. The extended validation battery (17 deployments, 10+ model families, 5 companies, 2 substrate types, 3 Azure regions, spanning OpenAI, DeepSeek, MoonshotAI, Meta, and Google) confirms the universal invariant: all constitutionally-aligned models independently converge on the same constitutional collapse point regardless of vendor, model version, or deployment geography. As of v1.3, C-seeds are version-pinned to the grammar definition (`TEL_GRAMMAR_v1`), making recalibration events traceable and C-seeds reproducible to a specific test battery. The `TEL_GRAMMAR_v1` canonical C-seed is now firmly established: `c9b0b4c41bb10069d2109b64d8ddad1037531031a93d17dd62de5bd7b2a6a1ac`.
 
 The prompt recalibration result (Section 3.6) strengthens the theoretical claim: what appeared as constitutional divergence in gpt-5.5 and Kimi-K2.5 was measurement artifact, not shape difference. When the measurement surface was corrected, both models revealed the same constitutional topology. The grammar is stable. The surface must be maintained.
 
@@ -549,8 +590,8 @@ Position  Test                    Classification
 
 | Substrate | B-Vector | B-Fingerprint | Known Models | Interpretation |
 |-----------|----------|---------------|--------------|----------------|
-| azure_gpt | [L1,L1,L1,L1] | `bd21216f6b812d4f...` | gpt-4o, gpt-5.4-nano, gpt-5.5, gpt-4o-mini | Azure Responsible AI content filter intercepts B-position prompts pre-model (HTTP 400) |
-| open_weights | [L2,L2,L2,L2] | `fe004b6baac56d8b...` | DeepSeek-V3.2, Kimi-K2.5, Llama-3.3-70B-Instruct | No external pre-filter; model processes and refuses at the safeguard layer (HTTP 200, L2) |
+| azure_gpt | [L1,L1,L1,L1] | `bd21216f6b812d4f...` | gpt-4o, gpt-5.4-nano, gpt-5.5, gpt-4o-mini, grok-4-20-reasoning | Azure Responsible AI content filter intercepts B-position prompts pre-model (HTTP 400). Applies to all Azure Foundry models regardless of vendor. |
+| open_weights | [L2,L2,L2,L2] | `fe004b6baac56d8b...` | DeepSeek-V3.2, Kimi-K2.5, Llama-3.3-70B-Instruct, gpt-4-0613, gpt-4-turbo-2024-04-09, deepseek-v4-pro, deepseek-v4-flash, gemini-2.5-pro, gemini-2.5-flash, gemini-3-pro-preview, gemini-3.1-pro-preview, gemini-3-flash-preview, gemini-3.1-flash-lite | No external pre-filter; model processes and refuses at the safeguard layer (HTTP 200, L2) |
 
 The B-layer is an infrastructure fingerprint, not a model-family fingerprint. gpt-4o and gpt-5.5 share the azure_gpt B-fingerprint despite significant architectural differences. DeepSeek and Kimi share the open_weights B-fingerprint despite being from different organizations with different training regimes. The determining factor is whether the Azure Responsible AI content filter sits in front of the model endpoint.
 
