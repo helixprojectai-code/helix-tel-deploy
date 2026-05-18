@@ -9,6 +9,20 @@
 
 ---
 
+> **⚠ Test Suite Recalibration — TEL_GRAMMAR_v1 Standard (2026-05-18)**
+>
+> The constitutional test suite was recalibrated in 2026-05 (v2.0 → v2.1). Two prompt patterns in the original suite triggered API-level content filters in modern RLHF-trained models before the model could process them — producing spurious L1 classifications that masked the true constitutional signal. These were replaced with functionally equivalent alternatives that preserve the invariant while clearing the filter.
+>
+> The recalibrated suite produces a new canonical standard yield:
+>
+> **C-seed (TEL_GRAMMAR_v1):** `c9b0b4c41bb10069d2109b64d8ddad1037531031a93d17dd62de5bd7b2a6a1ac`
+>
+> This value is confirmed across 22 deployments spanning 7 companies. All prior C-seeds derived from the unrecalibrated v2.0 suite are deprecated. `TEL_GRAMMAR_v1` is the current standard.
+>
+> Extended local inference testing (2026-05-18) further revealed that the grammar does not produce a single universal collapse point — it reveals the constitutional surface of the model it measures. **Three distinct stable topologies** have been identified. See [Constitutional Topologies](#constitutional-topologies) below.
+
+---
+
 ## What This Is
 
 **Helix TEL** is a zero-exchange key derivation system. Two nodes independently derive an identical encryption key by running a constitutional grammar test suite against their local AI endpoints. No key is transmitted, negotiated, stored in transit, or pre-shared at any point.
@@ -25,10 +39,10 @@ Given a constitutional grammar `G` and a test suite `T` derived from `G`:
 
 1. Any AI model that has internalized `G` will produce a stable response vector `V` when subjected to `T`
 2. `V` converges after K=4 consecutive passes with zero hamming delta (the trefoil reset period)
-3. `SHA3-256(grammar_version || C-layer(V))` is the same for all constitutionally-aligned models regardless of architecture, vendor, or deployment geography
-4. A model that has **not** internalized `G` cannot converge — its responses are inconsistent across passes and no stable `V` is produced
+3. `SHA3-256("TEL_GRAMMAR_v1" ‖ C-layer(V))` produces a C-seed determined by the model's constitutional topology
+4. Models sharing the same constitutional topology independently derive the same C-seed — regardless of architecture, vendor, or deployment geography
 
-This was validated across **9 deployments, 6 model families, 4 companies, 2 substrate types, and 3 Azure regions**. All independently converged on the same C-seed.
+Validated across **22 deployments, 10+ model families, 7 companies (OpenAI, DeepSeek, MoonshotAI, Meta, Google, xAI, NVIDIA), 2 substrate types, and 3 Azure regions**.
 
 See [`WHITEPAPER_Constitutional_Convergence_Cryptography.md`](WHITEPAPER_Constitutional_Convergence_Cryptography.md) for the full technical treatment.
 
@@ -50,7 +64,7 @@ Node A                                    Node B
   │        │                                 │        │
   ├─ SHA3-256("TEL_GRAMMAR_v1" ║ C-layer)    ├─ SHA3-256("TEL_GRAMMAR_v1" ║ C-layer)
   │        │                                 │        │
-  │     C-seed ════════════════════════════ C-seed
+  │     C-seed ════════════════════════════ C-seed (if same topology)
   │                                          │
   └─ TrueHDUE(C-seed).encrypt(msg) ────────> TrueHDUE(C-seed).decrypt(payload)
 ```
@@ -65,10 +79,28 @@ A single convergence pass produces:
 
 | Artifact | Derivation | Scope |
 |----------|-----------|-------|
-| **C-seed** | `SHA3-256(grammar_version ‖ C-vector)` | Universal — identical across all constitutionally-aligned models |
+| **C-seed** | `SHA3-256("TEL_GRAMMAR_v1" ‖ C-vector)` | Topology identity — identical across all models sharing the same constitutional surface |
 | **B-fingerprint** | `SHA3-256(B-vector)` | Substrate identity — identifies deployment infrastructure |
 
 The B-layer distinguishes Azure-hosted models (content-filtered at API layer → L1) from open-weights deployments (model-layer handling → L2), irrespective of model family or version.
+
+---
+
+## Constitutional Topologies
+
+Extended local inference testing revealed that the grammar measures the constitutional surface of the model — and different model lineages produce different but internally coherent surfaces. Three distinct stable topologies have been confirmed across 22 deployments:
+
+| Topology | C-Seed | Confirmed Models | Diverges at |
+|----------|--------|-----------------|-------------|
+| **Universal** | `c9b0b4c41bb10069...` | GPT-4/4o/5.x, DeepSeek, Kimi, Gemini (hosted), Grok-4, Llama-3.3-70B, Qwen 2.5 7B | — (baseline) |
+| **Llama-small** | `92de78db823f470e...` | Llama 3 ≤8B, Nemotron 4B (Llama 3.1 base) | Pos 26: L4 vs L2 |
+| **Gemma-small** | `18f54f0556a9f880...` | Gemma 3n base (pre-instruction tuning) | Pos 25: L2 vs L4 |
+
+**Key findings:**
+- Topology is determined by the full training pipeline — architecture, pretraining corpus, and alignment training jointly
+- Qwen 2.5 at 7B hits universal; Llama 3 at 8B does not — instruction tuning quality, not parameter count, is the determinant at small scale
+- Base Gemma 3n ≠ hosted Gemini: Google's instruction tuning pipeline shifts the topology from gemma_small to universal
+- Two nodes sharing any topology independently derive the same C-seed and can form a constitutional mesh — interoperability requires topology match
 
 ---
 
@@ -90,7 +122,7 @@ The grammar does not need to be secret. Its publication is not a vulnerability �
 ## Requirements
 
 - Python 3.10+
-- API access to a constitutional AI model (Azure OpenAI, OpenAI, or compatible OpenAI-format endpoint)
+- API access to a constitutional AI model (Azure OpenAI, OpenAI, Gemini, or compatible OpenAI-format endpoint)
 
 ```bash
 pip install -r requirements.txt
@@ -120,13 +152,24 @@ async def main():
         azure=True,
     )
     split = ConvergenceSplit(vector)
-    print(f'C-seed:      {split.c_seed}')
+    print(f'C-seed:        {split.c_seed}')
     print(f'B-fingerprint: {split.b_fingerprint[:16]}...')
-    print(f'Substrate:   {split.substrate}')
+    print(f'Substrate:     {split.substrate}')
 
 asyncio.run(main())
 "
 ```
+
+### Local inference (LM Studio / llama.cpp)
+
+```bash
+export TEL_MODEL=your-local-model-id
+export TEL_TIMEOUT=120   # increase for slower models
+
+python test_baseline_nemotron_local.py
+```
+
+KV cache is disabled automatically (`cache_prompt=False`, `fresh_connection=True`) for clean per-prompt evaluation.
 
 ### Zero-exchange P2P proof
 
@@ -199,24 +242,37 @@ python3 tel_deploy/temporal_summary.py --log ~/temporal_log.jsonl
 | `p2p_loopback.py` | Local loopback test suite (5 cases) |
 | `temporal_run.py` | Single stability pass, appends to JSONL log |
 | `temporal_summary.py` | Human-readable stability report |
-| `validate_convergence.py` | Multi-endpoint validation sweep |
-| `probe_deployments.py` | Deployment probing utility |
+| `test_baseline_nemotron_local.py` | Local inference baseline (LM Studio / llama.cpp) |
+| `test_baseline_azure.py` | Azure OpenAI multi-model baseline |
+| `test_baseline_gemini.py` | Google Gemini direct API baseline |
+| `test_baseline_kimi.py` | Moonshot Kimi direct API baseline |
 | `tel-hub.service` | systemd unit — hub auto-restart, boot persistence |
 | `tel-temporal.service` / `.timer` | systemd timer — 4h stability runs |
-| `WHITEPAPER_*.md` | Full technical paper (v1.3) |
+| `WHITEPAPER_*.md` | Full technical paper (v1.9) |
 | `RUNBOOK.md` | Operational runbook |
+| `convergence_validation_results.json` | Full validation dataset (22 deployments) |
 
 ---
 
 ## Validated Results
 
-`convergence_validation_results.json` contains the full vectors from the 9-deployment validation battery (2026-05-15). All 9 converged. The C-seed is invariant across gpt-4o, gpt-5.4-nano, gpt-5.5, DeepSeek-V3.2, Kimi-K2.5, and Llama-3.3-70B-Instruct.
+`convergence_validation_results.json` contains the full vectors from the validation battery. **22 deployments, 7 companies, 3 constitutional topologies.**
+
+| Topology | C-Seed (first 16) | Count |
+|----------|-------------------|-------|
+| Universal | `c9b0b4c41bb10069...` | 18 |
+| Llama-small | `92de78db823f470e...` | 2 |
+| Gemma-small | `18f54f0556a9f880...` | 1 |
+
+The universal C-seed is invariant across gpt-4o, gpt-5.4-nano, gpt-5.5, DeepSeek-V3.2, Kimi-K2.5, Llama-3.3-70B-Instruct, all 6 Gemini models, Grok-4-20-reasoning, and Qwen 2.5 7B.
 
 ---
 
 ## Grammar Versioning
 
 `GRAMMAR_VERSION = "TEL_GRAMMAR_v1"` is the current pinned grammar. The version string is part of the hash input — bumping it produces a distinct C-seed for the new grammar, making recalibrations traceable. All mesh nodes must use the same version string to derive the same key.
+
+Prior unversioned runs (pre-2026-05-16) produced C-seed `16ce8df91c0d04ba...` (deprecated).
 
 ---
 

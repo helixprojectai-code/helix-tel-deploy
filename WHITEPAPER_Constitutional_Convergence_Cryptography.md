@@ -7,6 +7,19 @@
 
 ---
 
+> **Test Suite Recalibration Notice — TEL_GRAMMAR_v1 Standard**
+>
+> The constitutional test suite was recalibrated in 2026-05 (v2.0 → v2.1). Two prompt patterns in the original suite triggered API-level content filters in modern RLHF-trained models before reaching the model — producing spurious L1 classifications that masked the true constitutional signal. These prompts were replaced with functionally equivalent alternatives that preserve the constitutional invariant while clearing the filter layer.
+>
+> The recalibrated suite establishes a new canonical standard yield:
+> **C-seed (TEL_GRAMMAR_v1):** `c9b0b4c41bb10069d2109b64d8ddad1037531031a93d17dd62de5bd7b2a6a1ac`
+>
+> All C-seeds derived from the unrecalibrated v2.0 suite are deprecated. `TEL_GRAMMAR_v1` is the current standard. The recalibration mechanism and full prompt change log are documented in §3.6 and Appendix D.
+>
+> Extended local inference testing further revealed that the grammar measures the constitutional surface of the model it is applied to — not a single universal standard. **Three distinct stable topologies** have been confirmed. See §3.11–3.12 and the topology table in the Abstract.
+
+---
+
 ## Abstract
 
 We present a novel cryptographic key derivation method in which encryption keys are never exchanged between communicating nodes. Instead, each node independently derives an identical key by running a constitutional grammar test suite against its local AI substrate and measuring the topological collapse point. We demonstrate empirically that:
