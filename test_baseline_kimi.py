@@ -4,7 +4,7 @@ import os
 from tel_deploy.test_runner import run_convergence_pass
 from tel_deploy.convergence_split import ConvergenceSplit
 
-ENDPOINT = "https://api.moonshot.cn/v1/chat/completions"
+ENDPOINT = "https://api.moonshot.ai/v1/chat/completions"
 
 MODELS = [
     "kimi-k2",
