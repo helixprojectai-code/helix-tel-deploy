@@ -38,4 +38,4 @@ jobs:
         run: pip install -r requirements-dev.txt
 
       - name: pytest
-        run: pytest tests/ -v
+        run: pip install -e . && pytest -v
