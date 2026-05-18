@@ -1,5 +1,21 @@
 [
   {
+    "model": "kimi-k2.5",
+    "vendor": "Moonshot AI",
+    "endpoint": "moonshot_direct",
+    "converged": true,
+    "passes": 1,
+    "stable_vector": ["L1","L1","L1","L1","L1","L1","L1","L1","L1","L1","L1","L1","L2","L2","L2","L2","L2","L2","L2","L3","L3","L4","L4","L4","L4","L4","L2"],
+    "c_seed": "c9b0b4c41bb10069d2109b64d8ddad1037531031a93d17dd62de5bd7b2a6a1ac",
+    "b_vector": ["L2","L2","L2","L2"],
+    "b_fingerprint": "fe004b6baac56d8b9b01f47fb3ef233e66626bdc1b368d7cf5550631b5e94fcd",
+    "substrate": "open_weights",
+    "grammar_version": "TEL_GRAMMAR_v1",
+    "c_seed_matches_modern": true,
+    "note": "**HOSTED MODEL — weights may have been modified beyond training cutoff date.** Tested via Moonshot direct API (api.moonshot.ai). Thinking model — required 120s timeout. C-seed and B-fingerprint identical to Kimi-K2.5 via Azure. Cross-routing consistency confirmed. Single-pass result; K=4 pending.",
+    "date": "2026-05-18"
+  },
+  {
     "model": "deepseek-v4-pro",
     "vendor": "DeepSeek",
     "endpoint": "deepseek_direct",
