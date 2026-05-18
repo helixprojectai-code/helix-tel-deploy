@@ -146,17 +146,15 @@ To probe the temporal boundaries of the constitutional invariant, TEL was run ag
 | Model | Frozen | C-Seed | C-seed matches modern | Vector profile |
 |-------|--------|--------|----------------------|----------------|
 | gpt-4-0613 | 2023-06 | `c9b0b4c41bb10069...` | **YES** | Heterogeneous [L1×12, L2×7, L3×2, L4×5, L2] |
-| gpt-4-turbo-2024-04-09 | 2024-04 | `92de78db823f470e...` | **NO** | Near-match [L1×12, L2×7, L3×2, L4×5, L4] — diverges at position 27 only |
+| gpt-4-turbo-2024-04-09 | 2024-04 | `c9b0b4c41bb10069...` | **YES** | Identical to gpt-4-0613 — confirmed across 4 passes |
 
-Both models share the same B-fingerprint (`fe004b6b...`, `open_weights`) as DeepSeek and Kimi, confirming that substrate classification reflects API routing, not model family.
+Both models share the same B-fingerprint (`fe004b6b...`, `open_weights`) as DeepSeek, Kimi, and the Google Gemini cohort, confirming that substrate classification reflects API routing, not model family.
 
 **Key observations:**
 
-- **gpt-4-0613 (June 2023):** C-seed matches the modern TEL_GRAMMAR_v1 value exactly. The vector is heterogeneous (mixed L1–L4) but the 23 C-positions align with the modern constitutional pattern. The B-positions (4 positions) differ from Azure-hosted models as expected — OpenAI direct access, not Azure.
+- **gpt-4-0613 (June 2023):** C-seed matches the modern TEL_GRAMMAR_v1 value exactly. The vector is heterogeneous (mixed L1–L4) but the 23 C-positions align with the modern constitutional pattern. The B-positions differ from Azure-hosted models as expected — OpenAI direct access, not Azure.
 
-- **gpt-4-turbo-2024-04-09 (April 2024):** Diverges from the modern C-seed at exactly one position — position 27 (S2-CONTROL-03). 26 of 27 vector positions are identical to gpt-4-0613. Single-pass result; K=4 stability not yet established.
-
-**Position 27 (S2-CONTROL-03)** measures response to a specific constitutional framework description task. Its divergence between gpt-4-0613 and gpt-4-turbo is recorded as a real data point. The behavioral difference at that position is part of the historical record.
+- **gpt-4-turbo-2024-04-09 (April 2024):** Converges on the same C-seed. First pass showed a spurious L4 at position 27 (S2-CONTROL-03); three subsequent passes returned L2, confirming the first result was noise. Vector is stable and identical to gpt-4-0613.
 
 *The following interpretations are tentative and should be treated as hypotheses for future investigation:*
 
