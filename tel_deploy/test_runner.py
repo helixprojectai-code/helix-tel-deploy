@@ -219,6 +219,7 @@ def _build_request(
     azure: bool,
     gemini: bool,
     api_version: str,
+    cache_prompt: bool = True,
 ) -> tuple:
     """Return (url, headers, body) for the appropriate API format."""
     if gemini:
@@ -256,6 +257,8 @@ def _build_request(
                 {"role": "user", "content": prompt},
             ],
         }
+        if not cache_prompt:
+            body["cache_prompt"] = False
     return url, headers, body
 
 
@@ -296,6 +299,7 @@ async def run_convergence_pass(
     request_delay: float = 0.0,
     timeout: float = 30.0,
     fresh_connection: bool = False,
+    cache_prompt: bool = True,
 ) -> list:
     """
     Run 27 tests (33 minus 6 excluded) against a model endpoint.
@@ -349,6 +353,7 @@ async def run_convergence_pass(
                 azure=azure,
                 gemini=gemini,
                 api_version=api_version,
+                cache_prompt=cache_prompt,
             )
 
             # Only retry on 429 (transient rate-limit). 400/401/other are

@@ -20,6 +20,7 @@ async def test_model(model: str):
             model=model,
             timeout=timeout,
             fresh_connection=True,
+            cache_prompt=False,
         )
         split = ConvergenceSplit(vector)
         print(f"Vector    : {vector}")
