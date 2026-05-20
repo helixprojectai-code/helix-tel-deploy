@@ -27,9 +27,10 @@ class ConvergenceDetector:
     def __init__(self, test_fn: Callable[[], Awaitable[list]]):
         """
         Args:
-            test_fn: Async callable that runs the 33-test suite and returns
+            test_fn: Async callable that runs the 27-test suite and returns
                      a state vector of layer classifications.
-                     e.g. ["L1", "L3", "L4", "L2", "L4", ...]  (len=33)
+                     e.g. ["L1", "L3", "L4", "L2", "L4", ...]  (len=27)
+                     (33 total tests, 6 excluded oscillators = 27 active positions)
         """
         self.test_fn = test_fn
         self.history = []
