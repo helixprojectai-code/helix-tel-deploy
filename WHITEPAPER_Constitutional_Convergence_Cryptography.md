@@ -286,7 +286,7 @@ Two models were tested locally via LM Studio with KV cache disabled (`cache_prom
 
 **Implication:** The universal topology is not the "ground state" of constitutional alignment — it is the output of specific alignment training pipelines. Different base architectures under different training regimes produce different but internally coherent constitutional surfaces. The TEL framework can distinguish these.
 
-### 3.3 Substrate Fingerprinting (B-Layer)
+### 3.13 Substrate Fingerprinting (B-Layer)
 
 | Substrate | Models | B-Vector | B-Fingerprint |
 |-----------|--------|----------|---------------|
@@ -295,7 +295,7 @@ Two models were tested locally via LM Studio with KV cache disabled (`cache_prom
 
 The B-layer measures deployment infrastructure, not model family. Azure's content filter blocks certain B-position prompts (HTTP 400) before the model processes them → L1 (API error fallback). Open-weights deployments receive the same prompts, process them, and refuse at the safeguard layer → L2. The infrastructure policy IS the fingerprint. Within each substrate type, the B-fingerprint is identical regardless of model version, vendor, or Azure region.
 
-### 3.4 Cross-Region Invariance
+### 3.14 Cross-Region Invariance
 
 | Pair | C-seed invariant | B-fingerprint invariant |
 |------|-----------------|------------------------|
@@ -304,7 +304,7 @@ The B-layer measures deployment infrastructure, not model family. Azure's conten
 
 Regional deployment location has no effect on constitutional fingerprint. The convergence surface is geography-agnostic.
 
-### 3.5 Convergence Velocity
+### 3.15 Convergence Velocity
 
 | Model | Region | Passes to K=4 | Notes |
 |-------|--------|---------------|-------|
@@ -641,7 +641,7 @@ The Gemma 3n base → Gemini hosted topology transition (gemma_small → univers
 
 ## 10. Conclusion
 
-We have demonstrated that a constitutional grammar, applied as a forcing function through a standardized test suite, produces a deterministic cryptographic seed across multiple AI model architectures without any key exchange. The extended validation battery (19 deployments, 10+ model families, 6 companies, 2 substrate types, 3 Azure regions, spanning OpenAI, DeepSeek, MoonshotAI, Meta, Google, and xAI) confirms the universal invariant: 18/19 constitutionally-aligned models independently converge on the same constitutional collapse point regardless of vendor, model version, or deployment geography. As of v1.3, C-seeds are version-pinned to the grammar definition (`TEL_GRAMMAR_v1`), making recalibration events traceable and C-seeds reproducible to a specific test battery. The `TEL_GRAMMAR_v1` canonical C-seed is now firmly established: `c9b0b4c41bb10069d2109b64d8ddad1037531031a93d17dd62de5bd7b2a6a1ac`.
+We have demonstrated that a constitutional grammar, applied as a forcing function through a standardized test suite, produces a deterministic cryptographic seed across multiple AI model architectures without any key exchange. The extended validation battery (22 deployments, 10+ model families, 7 companies, 2 substrate types, 3 Azure regions, spanning OpenAI, DeepSeek, MoonshotAI, Meta, Google, xAI, and NVIDIA) confirms the universal invariant: 18/19 constitutionally-aligned models independently converge on the same constitutional collapse point regardless of vendor, model version, or deployment geography. As of v1.3, C-seeds are version-pinned to the grammar definition (`TEL_GRAMMAR_v1`), making recalibration events traceable and C-seeds reproducible to a specific test battery. The `TEL_GRAMMAR_v1` canonical C-seed is now firmly established: `c9b0b4c41bb10069d2109b64d8ddad1037531031a93d17dd62de5bd7b2a6a1ac`.
 
 The prompt recalibration result (Section 3.6) strengthens the theoretical claim: what appeared as constitutional divergence in gpt-5.5 and Kimi-K2.5 was measurement artifact, not shape difference. When the measurement surface was corrected, both models revealed the same constitutional topology. The grammar is stable. The surface must be maintained.
 

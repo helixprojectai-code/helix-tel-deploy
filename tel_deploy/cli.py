@@ -141,7 +141,7 @@ def converge(ctx, max_passes, endpoint, api_key, model, azure):
         )
 
         async def test_fn():
-            click.echo("Running 33-test convergence pass...")
+            click.echo("Running convergence pass (27 active tests, 23C + 4B, from pool of 33)...")
             return await run_convergence_pass(ep, key, model=model, azure=azure)
 
         success = await client.converge(test_fn, max_passes=max_passes)
