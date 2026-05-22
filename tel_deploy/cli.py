@@ -257,16 +257,35 @@ def node(ctx, max_passes, endpoint, api_key, model, azure, node_id, topology, he
         else:
             click.echo("[TEL v2] No compatible peers online yet. Heartbeat will watch.")
 
-        # --- Phase 3: Heartbeat ---
+        # --- Phase 3: Heartbeat + auto-session ---
+        from .session import SessionInitiator
+
+        initiator = SessionInitiator(node_id=nid)
+        active_sessions = {}
+
         click.echo(f"[TEL v2] Heartbeat every {heartbeat}s. Ctrl+C to stop.\n")
 
         async def on_peer_change(peers):
             click.echo(f"[TEL v2] Peer set changed: {[p.node_id for p in peers]}")
+            for peer in peers:
+                if peer.node_id in active_sessions:
+                    continue
+                click.echo(f"[TEL v2] Opening session with {peer.node_id}...")
+                session = await initiator.open(peer.node_id, c_seed)
+                if session and session.verified:
+                    active_sessions[peer.node_id] = session
+                    click.echo(
+                        f"[TEL v2] Session VERIFIED with {peer.node_id}. "
+                        f"ID={session.session_id[:12]}  Seeds aligned."
+                    )
+                else:
+                    click.echo(f"[TEL v2] Session with {peer.node_id} failed — seed mismatch or timeout.")
 
         await ping_client.start_heartbeat(
             c_seed=c_seed,
             interval=heartbeat,
             on_peer_change=on_peer_change,
+            respond_to_challenges=True,
         )
 
     asyncio.run(_node())

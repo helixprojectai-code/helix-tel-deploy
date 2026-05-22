@@ -197,15 +197,20 @@ class PingClient:
         c_seed: Optional[str] = None,
         interval: int = 300,
         on_peer_change=None,
+        respond_to_challenges: bool = True,
     ):
         """
         Async heartbeat loop. Pings every `interval` seconds.
-        Calls on_peer_change(peers) if the compatible peer set changes.
+        - Calls on_peer_change(peers) if the compatible peer set changes.
+        - If respond_to_challenges=True and c_seed is set, checks for
+          incoming session challenges and responds automatically.
         """
         import asyncio
+        from .session import SessionResponder
 
         prev_peer_ids = set()
-        log.info(f"Heartbeat started — interval={interval}s")
+        responder = SessionResponder(self.node_id) if respond_to_challenges and c_seed else None
+        log.info(f"Heartbeat started — interval={interval}s  session_responder={responder is not None}")
 
         while True:
             try:
@@ -218,6 +223,12 @@ class PingClient:
                     if on_peer_change:
                         await on_peer_change(compatible)
                     prev_peer_ids = curr_peer_ids
+
+                # Auto-respond to any pending session challenges
+                if responder and c_seed:
+                    responded = await responder.check_and_respond(c_seed)
+                    if responded:
+                        log.info(f"Session challenges answered: {responded}")
 
             except Exception as e:
                 log.warning(f"Heartbeat ping failed: {e}")
