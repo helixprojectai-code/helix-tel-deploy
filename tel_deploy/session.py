@@ -49,7 +49,7 @@ import httpx
 log = logging.getLogger("tel.session")
 
 BASE_URL = os.environ.get("TEL_PING_URL", "https://helixprojectai.com/tel").rstrip("/ping").rstrip("/")
-CHALLENGE_TIMEOUT = int(os.environ.get("TEL_SESSION_TIMEOUT", 60))
+CHALLENGE_TIMEOUT = int(os.environ.get("TEL_SESSION_TIMEOUT", 120))
 POLL_INTERVAL = 3  # seconds between proof polls
 
 
