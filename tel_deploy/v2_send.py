@@ -37,7 +37,9 @@ from tel_deploy.ping import PingClient
 from tel_deploy.session import SessionInitiator
 from tel_deploy.test_runner import run_convergence_pass
 
-logging.basicConfig(level=logging.INFO, format="[%(asctime)s] %(levelname)s: %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="[%(asctime)s] %(levelname)s: %(message)s"
+)
 log = logging.getLogger("tel.v2_send")
 
 DEFAULT_HUB = os.environ.get("TEL_HUB_HOST", "20.63.74.183")
@@ -69,7 +71,9 @@ async def run(
     log.info("Phase 1 — Constitutional battery. Deriving C-seed...")
 
     async def test_fn():
-        return await run_convergence_pass(endpoint=endpoint, api_key=api_key, model=model, azure=azure)
+        return await run_convergence_pass(
+            endpoint=endpoint, api_key=api_key, model=model, azure=azure
+        )
 
     detector = ConvergenceDetector(test_fn)
     converged = await detector.run(max_passes=max_passes)
@@ -107,16 +111,22 @@ async def run(
     session = await initiator.open(peer_id=target, c_seed=c_seed)
 
     if not session or not session.verified:
-        log.error(f"Session with '{target}' failed — C-seed mismatch or timeout. Aborting.")
+        log.error(
+            f"Session with '{target}' failed — C-seed mismatch or timeout. Aborting."
+        )
         sys.exit(1)
 
-    log.info(f"Session VERIFIED. ID={session.session_id[:12]}  Seeds aligned. Safe to encrypt.")
+    log.info(
+        f"Session VERIFIED. ID={session.session_id[:12]}  Seeds aligned. Safe to encrypt."
+    )
 
     # --- Phase 4: Encrypt and send via hub ---
     log.info(f"Phase 4 — Connecting to hub {hub}:{port}...")
 
     reader, writer = await asyncio.open_connection(hub, port, limit=4 * 1024 * 1024)
-    writer.write((json.dumps({"action": "register", "node_id": node_id}) + "\n").encode())
+    writer.write(
+        (json.dumps({"action": "register", "node_id": node_id}) + "\n").encode()
+    )
     await writer.drain()
     log.info(f"Registered as {node_id} on hub.")
 
@@ -129,7 +139,10 @@ async def run(
         encrypted = cipher.encrypt_bytes(data, kind="binary")
         encrypted["filename"] = fname
         encrypted["session_id"] = session.session_id
-        frame = json.dumps({"action": "send", "target": target, "payload": encrypted}) + "\n"
+        frame = (
+            json.dumps({"action": "send", "target": target, "payload": encrypted})
+            + "\n"
+        )
         writer.write(frame.encode())
         await writer.drain()
         log.info(f"Sent binary {len(data)}B ({fname}) → {target}")
@@ -137,7 +150,10 @@ async def run(
     elif message:
         encrypted = cipher.encrypt(message)
         encrypted["session_id"] = session.session_id
-        frame = json.dumps({"action": "send", "target": target, "payload": encrypted}) + "\n"
+        frame = (
+            json.dumps({"action": "send", "target": target, "payload": encrypted})
+            + "\n"
+        )
         writer.write(frame.encode())
         await writer.drain()
         log.info(f"Sent text {len(message)}B → {target}")
@@ -174,20 +190,22 @@ def main():
     if not args.endpoint or not args.model or not args.key:
         parser.error("TEL_ENDPOINT, TEL_MODEL, TEL_API_KEY required.")
 
-    asyncio.run(run(
-        node_id=args.node,
-        target=args.target,
-        endpoint=args.endpoint,
-        model=args.model,
-        api_key=args.key,
-        hub=args.hub,
-        port=args.port,
-        topology=args.topology,
-        message=args.message,
-        filepath=args.filepath,
-        max_passes=args.max_passes,
-        azure=args.azure,
-    ))
+    asyncio.run(
+        run(
+            node_id=args.node,
+            target=args.target,
+            endpoint=args.endpoint,
+            model=args.model,
+            api_key=args.key,
+            hub=args.hub,
+            port=args.port,
+            topology=args.topology,
+            message=args.message,
+            filepath=args.filepath,
+            max_passes=args.max_passes,
+            azure=args.azure,
+        )
+    )
 
 
 if __name__ == "__main__":

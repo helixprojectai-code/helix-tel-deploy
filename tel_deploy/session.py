@@ -48,7 +48,11 @@ import httpx
 
 log = logging.getLogger("tel.session")
 
-BASE_URL = os.environ.get("TEL_PING_URL", "https://helixprojectai.com/tel").rstrip("/ping").rstrip("/")
+BASE_URL = (
+    os.environ.get("TEL_PING_URL", "https://helixprojectai.com/tel")
+    .rstrip("/ping")
+    .rstrip("/")
+)
 CHALLENGE_TIMEOUT = int(os.environ.get("TEL_SESSION_TIMEOUT", 120))
 POLL_INTERVAL = 3  # seconds between proof polls
 
@@ -123,10 +127,10 @@ class SessionInitiator:
             r = await http.post(
                 f"{BASE_URL}/session/challenge",
                 json={
-                    "from":             self.node_id,
-                    "to":               peer_id,
-                    "challenge_nonce":  challenge_nonce,
-                    "timestamp":        int(time.time()),
+                    "from": self.node_id,
+                    "to": peer_id,
+                    "challenge_nonce": challenge_nonce,
+                    "timestamp": int(time.time()),
                 },
             )
             r.raise_for_status()
@@ -138,7 +142,11 @@ class SessionInitiator:
                 await asyncio.sleep(POLL_INTERVAL)
                 r = await http.get(
                     f"{BASE_URL}/session/response",
-                    params={"from": peer_id, "to": self.node_id, "nonce": challenge_nonce},
+                    params={
+                        "from": peer_id,
+                        "to": self.node_id,
+                        "nonce": challenge_nonce,
+                    },
                 )
                 if r.status_code == 404:
                     log.debug("No proof yet, polling...")
@@ -157,10 +165,14 @@ class SessionInitiator:
                     session.verified = True
                     session.established_at = time.time()
                     session.session_id = session.derive_session_id()
-                    log.info(f"Session verified with {peer_id}. ID={session.session_id[:12]}...")
+                    log.info(
+                        f"Session verified with {peer_id}. ID={session.session_id[:12]}..."
+                    )
                     return session
                 else:
-                    log.error(f"Proof mismatch with {peer_id} — C-seeds diverged or replay.")
+                    log.error(
+                        f"Proof mismatch with {peer_id} — C-seeds diverged or replay."
+                    )
                     return None
 
         log.warning(f"Session with {peer_id} timed out after {CHALLENGE_TIMEOUT}s.")
@@ -207,15 +219,17 @@ class SessionResponder:
                 resp = await http.post(
                     f"{BASE_URL}/session/respond",
                     json={
-                        "from":            self.node_id,
-                        "to":              initiator,
+                        "from": self.node_id,
+                        "to": initiator,
                         "challenge_nonce": nonce,
-                        "proof":           proof,
-                        "timestamp":       int(time.time()),
+                        "proof": proof,
+                        "timestamp": int(time.time()),
                     },
                 )
                 resp.raise_for_status()
-                log.info(f"Responded to challenge from {initiator}  nonce={nonce[:8]}...")
+                log.info(
+                    f"Responded to challenge from {initiator}  nonce={nonce[:8]}..."
+                )
                 responded.append(initiator)
 
         return responded

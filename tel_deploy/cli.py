@@ -141,7 +141,9 @@ def converge(ctx, max_passes, endpoint, api_key, model, azure):
         )
 
         async def test_fn():
-            click.echo("Running convergence pass (27 active tests, 23C + 4B, from pool of 33)...")
+            click.echo(
+                "Running convergence pass (27 active tests, 23C + 4B, from pool of 33)..."
+            )
             return await run_convergence_pass(ep, key, model=model, azure=azure)
 
         success = await client.converge(test_fn, max_passes=max_passes)
@@ -206,7 +208,9 @@ def nodes(ctx):
 @click.option("--topology", default="universal", help="Constitutional topology")
 @click.option("--heartbeat", default=300, help="Ping interval in seconds (default 300)")
 @click.pass_context
-def node(ctx, max_passes, endpoint, api_key, model, azure, node_id, topology, heartbeat):
+def node(
+    ctx, max_passes, endpoint, api_key, model, azure, node_id, topology, heartbeat
+):
     """TEL v2: converge, ping registry, run heartbeat loop."""
     from .test_runner import run_convergence_pass
     from .ping import PingClient
@@ -217,7 +221,9 @@ def node(ctx, max_passes, endpoint, api_key, model, azure, node_id, topology, he
     nid = node_id or cfg["node"]["id"]
 
     if not ep or not key:
-        click.echo("Error: --endpoint and --api-key required (or TEL_CONVERGE_ENDPOINT / TEL_CONVERGE_API_KEY)")
+        click.echo(
+            "Error: --endpoint and --api-key required (or TEL_CONVERGE_ENDPOINT / TEL_CONVERGE_API_KEY)"
+        )
         return
 
     async def _node():
@@ -243,7 +249,9 @@ def node(ctx, max_passes, endpoint, api_key, model, azure, node_id, topology, he
             return
 
         c_seed = client._split.get_mesh_seed()
-        click.echo(f"[TEL v2] Converged. C-seed: {c_seed[:16]}...  Substrate: {client._split.substrate}")
+        click.echo(
+            f"[TEL v2] Converged. C-seed: {c_seed[:16]}...  Substrate: {client._split.substrate}"
+        )
 
         # --- Phase 2: Ping registry ---
         ping_client = PingClient(node_id=nid, topology=topology)
@@ -279,7 +287,9 @@ def node(ctx, max_passes, endpoint, api_key, model, azure, node_id, topology, he
                         f"ID={session.session_id[:12]}  Seeds aligned."
                     )
                 else:
-                    click.echo(f"[TEL v2] Session with {peer.node_id} failed — seed mismatch or timeout.")
+                    click.echo(
+                        f"[TEL v2] Session with {peer.node_id} failed — seed mismatch or timeout."
+                    )
 
         await ping_client.start_heartbeat(
             c_seed=c_seed,

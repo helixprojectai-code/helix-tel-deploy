@@ -26,9 +26,7 @@ import httpx
 
 log = logging.getLogger("tel.ping")
 
-PING_URL = os.environ.get(
-    "TEL_PING_URL", "https://helixprojectai.com/tel/ping"
-)
+PING_URL = os.environ.get("TEL_PING_URL", "https://helixprojectai.com/tel/ping")
 PROTOCOL_VERSION = "TEL_PING_v2"
 GRAMMAR_VERSION = "TEL_GRAMMAR_v1"
 STALE_THRESHOLD = 600  # seconds — peers not seen in 10 min are stale
@@ -85,7 +83,9 @@ class PingResponse:
     my_nonce: str  # the nonce we sent — retained for HMAC challenges
 
     def compatible_peers(self, topology: str, grammar: str) -> list[PeerRecord]:
-        return [p for p in self.peers if p.is_compatible(topology, grammar) and p.is_live()]
+        return [
+            p for p in self.peers if p.is_compatible(topology, grammar) and p.is_live()
+        ]
 
 
 # ---------------------------------------------------------------------------
@@ -146,7 +146,9 @@ class PingClient:
         if c_seed:
             body["proof"] = make_proof(c_seed, payload.nonce)
 
-        log.info(f"Ping → {self.ping_url}  node={self.node_id} topology={self.topology} nonce={payload.nonce[:8]}...")
+        log.info(
+            f"Ping → {self.ping_url}  node={self.node_id} topology={self.topology} nonce={payload.nonce[:8]}..."
+        )
 
         async with httpx.AsyncClient(timeout=self.timeout) as http:
             try:
@@ -208,8 +210,12 @@ class PingClient:
         from .session import SessionResponder
 
         prev_peer_ids = set()
-        responder = SessionResponder(self.node_id) if respond_to_challenges and c_seed else None
-        log.info(f"Heartbeat started — interval={interval}s  session_responder={responder is not None}")
+        responder = (
+            SessionResponder(self.node_id) if respond_to_challenges and c_seed else None
+        )
+        log.info(
+            f"Heartbeat started — interval={interval}s  session_responder={responder is not None}"
+        )
 
         while True:
             try:

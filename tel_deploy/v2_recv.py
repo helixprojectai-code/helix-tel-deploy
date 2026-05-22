@@ -40,7 +40,9 @@ from tel_deploy.convergence_split import ConvergenceSplit
 from tel_deploy.ping import PingClient
 from tel_deploy.test_runner import run_convergence_pass
 
-logging.basicConfig(level=logging.INFO, format="[%(asctime)s] %(levelname)s: %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="[%(asctime)s] %(levelname)s: %(message)s"
+)
 log = logging.getLogger("tel.v2_recv")
 
 DEFAULT_HUB = os.environ.get("TEL_HUB_HOST", "20.63.74.183")
@@ -73,13 +75,17 @@ async def run(
     # Messages queue in the TCP buffer while we run the battery.
     log.info(f"Phase 1 — Registering with hub {hub}:{port} as {node_id}...")
     reader, writer = await asyncio.open_connection(hub, port, limit=4 * 1024 * 1024)
-    writer.write((json.dumps({"action": "register", "node_id": node_id}) + "\n").encode())
+    writer.write(
+        (json.dumps({"action": "register", "node_id": node_id}) + "\n").encode()
+    )
     await writer.drain()
     log.info("Registered. Starting convergence battery...")
 
     # --- Phase 2: Convergence ---
     async def test_fn():
-        return await run_convergence_pass(endpoint=endpoint, api_key=api_key, model=model, azure=azure)
+        return await run_convergence_pass(
+            endpoint=endpoint, api_key=api_key, model=model, azure=azure
+        )
 
     detector = ConvergenceDetector(test_fn)
     converged = await detector.run(max_passes=max_passes)
@@ -191,19 +197,21 @@ def main():
     if not args.endpoint or not args.model or not args.key:
         parser.error("TEL_ENDPOINT, TEL_MODEL, TEL_API_KEY required.")
 
-    asyncio.run(run(
-        node_id=args.node,
-        endpoint=args.endpoint,
-        model=args.model,
-        api_key=args.key,
-        hub=args.hub,
-        port=args.port,
-        topology=args.topology,
-        output_dir=args.output_dir,
-        max_passes=args.max_passes,
-        heartbeat_interval=args.heartbeat,
-        azure=args.azure,
-    ))
+    asyncio.run(
+        run(
+            node_id=args.node,
+            endpoint=args.endpoint,
+            model=args.model,
+            api_key=args.key,
+            hub=args.hub,
+            port=args.port,
+            topology=args.topology,
+            output_dir=args.output_dir,
+            max_passes=args.max_passes,
+            heartbeat_interval=args.heartbeat,
+            azure=args.azure,
+        )
+    )
 
 
 if __name__ == "__main__":
