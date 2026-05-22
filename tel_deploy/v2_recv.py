@@ -121,7 +121,7 @@ async def run(
     print(f"\n{'='*60}")
     print(f"C-seed: {c_seed[:16]}...  Substrate: {split.substrate}")
     print(f"Listening as {node_id}. Heartbeat every {heartbeat_interval}s.")
-    print(f"Session challenges answered automatically.")
+    print("Session challenges answered automatically.")
     print(f"{'='*60}\n")
 
     # --- Phase 5: Listen on hub ---

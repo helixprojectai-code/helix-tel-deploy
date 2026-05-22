@@ -247,7 +247,7 @@ def node(ctx, max_passes, endpoint, api_key, model, azure, node_id, topology, he
 
         # --- Phase 2: Ping registry ---
         ping_client = PingClient(node_id=nid, topology=topology)
-        click.echo(f"[TEL v2] Pinging registry...")
+        click.echo("[TEL v2] Pinging registry...")
         response = await ping_client.ping(c_seed=c_seed)
         click.echo(f"[TEL v2] Registry ok. {len(response.peers)} peer(s) known.")
 
