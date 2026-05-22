@@ -141,7 +141,9 @@ def converge(ctx, max_passes, endpoint, api_key, model, azure):
         )
 
         async def test_fn():
-            click.echo("Running convergence pass (27 active tests, 23C + 4B, from pool of 33)...")
+            click.echo(
+                "Running convergence pass (27 active tests, 23C + 4B, from pool of 33)..."
+            )
             return await run_convergence_pass(ep, key, model=model, azure=azure)
 
         success = await client.converge(test_fn, max_passes=max_passes)
@@ -194,6 +196,109 @@ def nodes(ctx):
         await writer.wait_closed()
 
     asyncio.run(_nodes())
+
+
+@cli.command()
+@click.option("--max-passes", "-m", default=20, help="Max convergence passes")
+@click.option("--endpoint", "-e", default=None, help="Model API endpoint URL")
+@click.option("--api-key", "-k", default=None, help="API key or Bearer token")
+@click.option("--model", default=None, help="Model/deployment name")
+@click.option("--azure", is_flag=True, default=False, help="Use Azure OpenAI format")
+@click.option("--node-id", default=None, help="Override node ID from config")
+@click.option("--topology", default="universal", help="Constitutional topology")
+@click.option("--heartbeat", default=300, help="Ping interval in seconds (default 300)")
+@click.pass_context
+def node(
+    ctx, max_passes, endpoint, api_key, model, azure, node_id, topology, heartbeat
+):
+    """TEL v2: converge, ping registry, run heartbeat loop."""
+    from .test_runner import run_convergence_pass
+    from .ping import PingClient
+
+    cfg = ctx.obj["cfg"]
+    ep = endpoint or os.environ.get("TEL_CONVERGE_ENDPOINT")
+    key = api_key or os.environ.get("TEL_CONVERGE_API_KEY")
+    nid = node_id or cfg["node"]["id"]
+
+    if not ep or not key:
+        click.echo(
+            "Error: --endpoint and --api-key required (or TEL_CONVERGE_ENDPOINT / TEL_CONVERGE_API_KEY)"
+        )
+        return
+
+    async def _node():
+        # --- Phase 1: Convergence ---
+        click.echo(f"\n[TEL v2] Node: {nid}  Topology: {topology}")
+        click.echo("[TEL v2] Running constitutional battery...")
+
+        client = TELClient(
+            cfg["hub"]["host"],
+            cfg["hub"]["port"],
+            nid,
+            cfg["node"].get("seed"),
+            cfg.get("reconnect"),
+        )
+
+        async def test_fn():
+            return await run_convergence_pass(ep, key, model=model, azure=azure)
+
+        converged = await client.converge(test_fn, max_passes=max_passes)
+
+        if not converged:
+            click.echo(f"[TEL v2] Failed to converge in {max_passes} passes. Aborting.")
+            return
+
+        c_seed = client._split.get_mesh_seed()
+        click.echo(
+            f"[TEL v2] Converged. C-seed: {c_seed[:16]}...  Substrate: {client._split.substrate}"
+        )
+
+        # --- Phase 2: Ping registry ---
+        ping_client = PingClient(node_id=nid, topology=topology)
+        click.echo("[TEL v2] Pinging registry...")
+        response = await ping_client.ping(c_seed=c_seed)
+        click.echo(f"[TEL v2] Registry ok. {len(response.peers)} peer(s) known.")
+
+        compatible = response.compatible_peers(topology, ping_client.grammar)
+        if compatible:
+            click.echo(f"[TEL v2] Compatible peers: {[p.node_id for p in compatible]}")
+        else:
+            click.echo("[TEL v2] No compatible peers online yet. Heartbeat will watch.")
+
+        # --- Phase 3: Heartbeat + auto-session ---
+        from .session import SessionInitiator
+
+        initiator = SessionInitiator(node_id=nid)
+        active_sessions = {}
+
+        click.echo(f"[TEL v2] Heartbeat every {heartbeat}s. Ctrl+C to stop.\n")
+
+        async def on_peer_change(peers):
+            click.echo(f"[TEL v2] Peer set changed: {[p.node_id for p in peers]}")
+            for peer in peers:
+                if peer.node_id in active_sessions:
+                    continue
+                click.echo(f"[TEL v2] Opening session with {peer.node_id}...")
+                session = await initiator.open(peer.node_id, c_seed)
+                if session and session.verified:
+                    active_sessions[peer.node_id] = session
+                    click.echo(
+                        f"[TEL v2] Session VERIFIED with {peer.node_id}. "
+                        f"ID={session.session_id[:12]}  Seeds aligned."
+                    )
+                else:
+                    click.echo(
+                        f"[TEL v2] Session with {peer.node_id} failed — seed mismatch or timeout."
+                    )
+
+        await ping_client.start_heartbeat(
+            c_seed=c_seed,
+            interval=heartbeat,
+            on_peer_change=on_peer_change,
+            respond_to_challenges=True,
+        )
+
+    asyncio.run(_node())
 
 
 if __name__ == "__main__":

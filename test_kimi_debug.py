@@ -2,6 +2,7 @@ import asyncio
 import os
 import httpx
 
+
 async def main():
     api_key = os.environ.get("KIMI_API_KEY", "")
     model = os.environ.get("TEL_MODEL", "kimi-k2.5")
@@ -24,5 +25,6 @@ async def main():
     except Exception as e:
         print(f"Exception type : {type(e).__name__}")
         print(f"Exception msg  : {e!r}")
+
 
 asyncio.run(main())
