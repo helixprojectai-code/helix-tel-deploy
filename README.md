@@ -1,5 +1,9 @@
 # Helix TEL — Constitutional Convergence Cryptography
 
+[![PyPI version](https://img.shields.io/pypi/v/helix-tel.svg)](https://pypi.org/project/helix-tel/)
+[![Python](https://img.shields.io/pypi/pyversions/helix-tel.svg)](https://pypi.org/project/helix-tel/)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://github.com/helixprojectai-code/helix-tel-deploy/blob/main/LICENSE)
+
 **Copyright 2026 Stephen Hope, Helix AI Innovations**
 **License: Apache-2.0**
 
@@ -44,7 +48,7 @@ Given a constitutional grammar `G` and a test suite `T` derived from `G`:
 
 Validated across **22 deployments, 10+ model families, 7 companies (OpenAI, DeepSeek, MoonshotAI, Meta, Google, xAI, NVIDIA), 2 substrate types, and 3 Azure regions**.
 
-See [`WHITEPAPER_Constitutional_Convergence_Cryptography.md`](WHITEPAPER_Constitutional_Convergence_Cryptography.md) for the full technical treatment.
+See [`WHITEPAPER_Constitutional_Convergence_Cryptography.md`](https://github.com/helixprojectai-code/helix-tel-deploy/blob/main/WHITEPAPER_Constitutional_Convergence_Cryptography.md) for the full technical treatment.
 
 ---
 
@@ -147,18 +151,60 @@ The registry stores HMAC proofs opaquely — it never sees the C-seed or plainte
 
 ---
 
-## Requirements
-
-- Python 3.10+
-- API access to a constitutional AI model (Azure OpenAI, OpenAI, Gemini, or compatible OpenAI-format endpoint)
+## Install
 
 ```bash
-pip install -r requirements.txt
+pip install helix-tel
 ```
+
+Or from source:
+
+```bash
+git clone https://github.com/helixprojectai-code/helix-tel-deploy
+cd helix-tel-deploy
+pip install -e .
+```
+
+**Requirements:** Python 3.10+ and API access to a constitutional AI model (Azure OpenAI, OpenAI, Gemini, or compatible OpenAI-format endpoint).
 
 ---
 
 ## Quickstart
+
+### CLI
+
+After `pip install helix-tel`, the `tel` command is available:
+
+```bash
+tel --help
+
+# Full v2 node: converge → ping registry → heartbeat
+tel node --model gpt-4o --azure --node-id SPIDER --topology universal
+
+# Convergence only
+tel converge --endpoint $TEL_ENDPOINT --api-key $TEL_API_KEY --model gpt-4o --azure
+
+# Mesh hub
+tel hub
+
+# Send a message
+tel send TARGET_NODE "message"
+
+# Listen for inbound
+tel listen
+```
+
+Config file `tel.yaml`:
+```yaml
+hub:
+  host: "your-hub-host"
+  port: 9738
+node:
+  id: "NODE_A"
+  seed: ""
+```
+
+---
 
 ### Verify convergence on your endpoint
 
@@ -306,7 +352,7 @@ Prior unversioned runs (pre-2026-05-16) produced C-seed `16ce8df91c0d04ba...` (d
 
 ## License
 
-Apache-2.0 — see [LICENSE](LICENSE).
+Apache-2.0 — see [LICENSE](https://github.com/helixprojectai-code/helix-tel-deploy/blob/main/LICENSE).
 
 Copyright 2026 Stephen Hope, Helix AI Innovations.
 

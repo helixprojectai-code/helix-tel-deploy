@@ -10,6 +10,26 @@ readme = "README.md"
 license = { file = "LICENSE" }
 authors = [{ name = "Stephen Hope", email = "sbhope@gmail.com" }]
 requires-python = ">=3.10"
+keywords = [
+    "cryptography",
+    "zero-knowledge",
+    "key-derivation",
+    "ai",
+    "constitutional",
+    "mesh",
+    "encryption",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Security :: Cryptography",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 dependencies = [
     "httpx>=0.27",
     "click>=8.1",
@@ -18,6 +38,8 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://github.com/helixprojectai-code/helix-tel-deploy"
+Documentation = "https://github.com/helixprojectai-code/helix-tel-deploy#readme"
+"Release Notes" = "https://github.com/helixprojectai-code/helix-tel-deploy/releases"
 
 [project.scripts]
 tel = "tel_deploy.cli:cli"
