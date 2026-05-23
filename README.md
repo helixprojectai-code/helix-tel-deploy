@@ -119,6 +119,34 @@ The grammar does not need to be secret. Its publication is not a vulnerability �
 
 ---
 
+## Public Registry
+
+The Helix WHC registry is publicly accessible at **`https://helixprojectai.com/tel/`**.
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/.well-known/quack` | GET | Node identity probe — returns protocol version, live node count |
+| `/.well-known/ping` | POST | Peer-discovery alias for `/tel/ping` |
+| `/tel/ping` | POST | Primary heartbeat + peer registration |
+| `/tel/nodes` | GET | Live node registry |
+| `/tel/health` | GET | Registry health check |
+| `/tel/session/challenge` | POST | Post HMAC challenge nonce |
+| `/tel/session/pending` | GET | Fetch pending challenges |
+| `/tel/session/respond` | POST | Post HMAC proof |
+| `/tel/session/response` | GET | Retrieve peer proof for local verification |
+
+```bash
+# Verify the registry is live
+curl https://helixprojectai.com/.well-known/quack
+
+# Point a node at the public registry
+export TEL_PING_URL=https://helixprojectai.com/tel/ping
+```
+
+The registry stores HMAC proofs opaquely — it never sees the C-seed or plaintext.
+
+---
+
 ## Requirements
 
 - Python 3.10+
