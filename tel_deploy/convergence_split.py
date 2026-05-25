@@ -8,6 +8,9 @@ log = logging.getLogger("tel.convergence_split")
 # All nodes must use the same version to derive the same C-seed.
 # History:
 #   v1  2026-05-16  Initial versioned grammar: 33 tests, 6 excluded, 23C/4B split.
+#   v1  2026-05-25  Version prefix applied to ConvergenceDetector._derive_seed()
+#                   — full-vector convergence hash now versioned, consistent with c_seed.
+#                   grammar_version threaded explicitly through validate_convergence.py.
 GRAMMAR_VERSION = "TEL_GRAMMAR_v1"
 
 # LAYER C: Universal positions — identical across all models

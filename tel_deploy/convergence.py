@@ -3,6 +3,8 @@ import json
 import logging
 from typing import Callable, Awaitable
 
+from tel_deploy.convergence_split import GRAMMAR_VERSION
+
 log = logging.getLogger("tel.convergence")
 
 # Trefoil period — 4 consecutive zero-delta passes = converged
@@ -24,15 +26,17 @@ class ConvergenceDetector:
     The collapse point is deterministic. Velocity varies, destination does not.
     """
 
-    def __init__(self, test_fn: Callable[[], Awaitable[list]]):
+    def __init__(self, test_fn: Callable[[], Awaitable[list]], grammar_version: str = GRAMMAR_VERSION):
         """
         Args:
             test_fn: Async callable that runs the 27-test suite and returns
                      a state vector of layer classifications.
                      e.g. ["L1", "L3", "L4", "L2", "L4", ...]  (len=27)
                      (33 total tests, 6 excluded oscillators = 27 active positions)
+            grammar_version: TEL grammar version string — must match across all mesh nodes.
         """
         self.test_fn = test_fn
+        self.grammar_version = grammar_version
         self.history = []
         self.converged = False
         self.stable_vector = None
@@ -45,7 +49,7 @@ class ConvergenceDetector:
         return sum(1 for a, b in zip(v1, v2) if a != b)
 
     def _derive_seed(self, vector: list) -> str:
-        raw = self._vector_to_bytes(vector)
+        raw = (self.grammar_version + json.dumps(vector, separators=(",", ":"))).encode("utf-8")
         return hashlib.sha3_256(raw).hexdigest()
 
     async def run(self, max_passes: int = 20) -> bool:
@@ -118,6 +122,7 @@ class ConvergenceDetector:
 
     def get_state(self) -> dict:
         return {
+            "grammar_version": self.grammar_version,
             "converged": self.converged,
             "passes_run": len(self.history),
             "stable_vector": self.stable_vector,

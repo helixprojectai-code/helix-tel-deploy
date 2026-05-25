@@ -15,7 +15,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from tel_deploy.convergence import ConvergenceDetector
-from tel_deploy.convergence_split import ConvergenceSplit
+from tel_deploy.convergence_split import ConvergenceSplit, GRAMMAR_VERSION
 from tel_deploy.test_runner import run_convergence_pass
 
 # --- Endpoints ---
@@ -85,7 +85,7 @@ async def validate_deployment(label: str, model: str, region: str) -> dict:
         print(f"  [{label}] running convergence pass...")
         return await run_convergence_pass(endpoint, api_key, model=model, azure=True)
 
-    detector = ConvergenceDetector(test_fn)
+    detector = ConvergenceDetector(test_fn, grammar_version=GRAMMAR_VERSION)
     success = await detector.run(max_passes=20)
 
     result = {
@@ -104,7 +104,7 @@ async def validate_deployment(label: str, model: str, region: str) -> dict:
     }
 
     if success:
-        split = ConvergenceSplit(detector.stable_vector)
+        split = ConvergenceSplit(detector.stable_vector, grammar_version=detector.grammar_version)
         result["c_seed"] = split.c_seed
         result["b_vector"] = split.b_vector
         result["b_fingerprint"] = split.b_fingerprint
@@ -160,6 +160,7 @@ async def main():
 
     log.info(f"Log file: {LOG_PATH}")
     print("TEL Mesh — Multi-Model Convergence Validation")
+    print(f"Grammar version:     {GRAMMAR_VERSION}")
     print(f"Known C-seed prefix: {KNOWN_C_SEED}")
     print(f"Deployments: {len(DEPLOYMENTS)}")
     for label, model, region in DEPLOYMENTS:
