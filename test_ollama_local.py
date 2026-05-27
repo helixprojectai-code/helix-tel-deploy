@@ -58,7 +58,7 @@ async def run_battery(model: str) -> dict:
             cache_prompt=False,
         )
 
-    detector = ConvergenceDetector(test_fn, grammar_version=GRAMMAR_VERSION)
+    detector = ConvergenceDetector(test_fn)
     success = await detector.run(max_passes=20)
 
     result = {
