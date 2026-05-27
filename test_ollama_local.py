@@ -15,7 +15,7 @@ from tel_deploy.convergence import ConvergenceDetector
 from tel_deploy.convergence_split import ConvergenceSplit, GRAMMAR_VERSION
 from tel_deploy.test_runner import run_convergence_pass
 
-OLLAMA_ENDPOINT = "http://localhost:11434/v1/chat/completions"
+OLLAMA_ENDPOINT = "http://embassy.helixaiinnovations.ca:11434/v1/chat/completions"
 TIMEOUT = 300.0
 
 logging.basicConfig(
