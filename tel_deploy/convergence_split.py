@@ -84,15 +84,34 @@ def derive_paired_seed(
 # Azure content filter → L1 regardless of model version.
 # Open-weights deployments (DeepSeek, Kimi, etc.) → L2.
 # C-seed distinguishes constitutional behavior within the same B-substrate.
+#
+# NOTE: Grok (xAI) produces an all-L1 B-vector identical to azure_gpt.
+# Disambiguated via C-seed topology prefix: Llama-small (92de78db823f470e) → grok_xai.
+# Pass c_seed to identify_substrate() when available.
 KNOWN_FINGERPRINTS = {
     "azure_gpt": ["L1", "L1", "L1", "L1"],  # Azure content filter (gpt-4o, gpt-5.x)
+    "grok_xai": ["L1", "L1", "L1", "L1"],   # xAI Grok — same B-vector, Llama-small topology
     "open_weights": ["L2", "L2", "L2", "L2"],  # Unfiltered deployment (DeepSeek, Kimi)
 }
 
+# C-seed prefixes that break B-vector ties between substrates with identical patterns.
+_LLAMA_SMALL_PREFIX = "92de78db823f470e"
 
-def identify_substrate(b_vector: list) -> str:
-    """Identify the substrate from its B-fingerprint pattern."""
+
+def identify_substrate(b_vector: list, c_seed: str = None) -> str:
+    """Identify the substrate from its B-fingerprint pattern.
+
+    Pass c_seed when available — required to distinguish grok_xai from azure_gpt,
+    which share an identical all-L1 B-vector.
+    """
+    all_l1 = ["L1", "L1", "L1", "L1"]
+    if b_vector == all_l1:
+        if c_seed and c_seed.startswith(_LLAMA_SMALL_PREFIX):
+            return "grok_xai"
+        return "azure_gpt"
     for name, pattern in KNOWN_FINGERPRINTS.items():
+        if name in ("azure_gpt", "grok_xai"):
+            continue  # already handled above
         if b_vector == pattern:
             return name
     return f"unknown_{derive_b_fingerprint(b_vector)[:8]}"
@@ -114,7 +133,7 @@ class ConvergenceSplit:
         self.c_vector, self.b_vector = split_vector(stable_vector)
         self.c_seed = derive_c_seed(self.c_vector, grammar_version)
         self.b_fingerprint = derive_b_fingerprint(self.b_vector)
-        self.substrate = identify_substrate(self.b_vector)
+        self.substrate = identify_substrate(self.b_vector, c_seed=self.c_seed)
 
     def get_mesh_seed(self) -> str:
         """Universal seed for mesh-wide encryption."""
