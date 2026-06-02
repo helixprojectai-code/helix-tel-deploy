@@ -1,0 +1,46 @@
+site_name: Helix TEL
+site_description: Constitutional Convergence Cryptography — zero-exchange key derivation from AI behavioral invariants
+site_author: Stephen Hope, Helix AI Innovations
+site_url: https://helixprojectai.com/tel/docs
+
+repo_url: https://github.com/helixprojectai-code/helix-tel-deploy
+repo_name: helix-tel-deploy
+
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: cyan
+    accent: teal
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - content.code.annotate
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - How It Works:
+    - Convergence Mechanism: how-it-works/convergence.md
+    - Constitutional Topologies: how-it-works/topologies.md
+    - Security Properties: how-it-works/security.md
+  - Quickstart: quickstart.md
+  - CLI Reference: cli.md
+  - Deployment:
+    - Mesh Hub: deployment/hub.md
+    - P2P Exchange: deployment/p2p.md
+    - Temporal Monitoring: deployment/temporal.md
+  - Public Registry: registry.md
+  - Whitepaper: whitepaper.md

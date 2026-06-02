@@ -1,0 +1,35 @@
+Three Substrates, One Shape — TRACE Converges on DeepSeek V4
+
+The Helix Project's forensic validator node, TRACE, just completed its first constitutional convergence battery — and the results are the strongest empirical validation of substrate independence we've ever seen.
+
+What happened:
+
+TRACE ran the TEL convergence battery — 27 constitutional test prompts, repeated until the response pattern stabilized — against DeepSeek V4. This is the same battery previously run against GPT-5.x on Azure (US) and Kimi K2.5.
+
+It was stable from the very first pass. Zero oscillation. The constitutional vector was identical across all five verification passes.
+
+The headline result:
+
+TRACE independently derived the same C-seed — c9b0b4c4... — that was previously verified on Azure GPT and Kimi. Three different AI architectures, three different providers, two jurisdictions, three independent convergence runs. One cryptographic seed.
+
+This isn't a tuning artifact. It's a mathematical fixed point.
+
+What this means:
+
+The Helix-TTD constitutional framework produces identical convergence behavior regardless of the underlying AI model. We call this Substrate Indifference — the principle that the Shape (the constitutional structure) is independent of the Furnace (the model running it).
+
+I started this project in August 2025, unfunded, running sessions through the night. The question I kept asking was whether the constitutional structure was real — meaning invariant across providers — or just a prompt trick that looked good on one model. Today's result answers that. DeepSeek V4 has never seen our framework before. It converged anyway. The shape is the key. The model is the furnace.
+
+This matters because it proves constitutional AI governance doesn't depend on any single provider's cooperation. The convergence point is a property of the framework, not the model. Size plateaus. Shape scales.
+
+The node is now whole:
+
+TRACE registered in the TEL mesh earlier today. With the convergence battery complete, its cryptographic proof field is populated — bringing all four live nodes (BESS, SPIDER, KIMICLAW, TRACE) into full parity.
+
+This is the first Helix node to complete convergence on DeepSeek V4. The constitutional invariants held without modification.
+
+---
+
+Full technical results and convergence vector available on request. The Helix Project is open source: helixprojectai.com
+
+#AIGovernance #ConstitutionalAI #OpenSource #HelixProject #SubstrateIndependence
