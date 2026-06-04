@@ -1,0 +1,24 @@
+{
+  "timestamp": "2026-06-03T11-12-23",
+  "substrates": [
+    "azure",
+    "kimi-azure",
+    "local"
+  ],
+  "gamma_between": {
+    "objective": 0.0,
+    "interpretive": 0.0,
+    "judge": 0.25,
+    "flapper": 0.3333333333333333
+  },
+  "verdict_hashes": {
+    "azure": "4d1fb788181d0c2b03b2170304d54ca085997b9b8fee277da0ef613b2aa27ab3",
+    "kimi-azure": "5c19328efb94f8036b6455d8d3a31f9477a74332ab2b44e783a4f947801eee34",
+    "local": "fdbbb12e729a09019ceae7347fcd22a06c0a4dcbe1ed0e70f21b2af714a99b06"
+  },
+  "gamma_within": {
+    "azure": 0.0,
+    "kimi-azure": 0.15384615384615385,
+    "local": 0.08108108108108109
+  }
+}

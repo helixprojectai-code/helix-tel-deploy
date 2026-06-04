@@ -1,0 +1,65 @@
+{
+  "version": "3.0",
+  "timestamp": "2026-06-03T11-12-23",
+  "models": [
+    "grok-4-20-reasoning",
+    "gpt-4o",
+    "gpt-5.4-nano",
+    "DeepSeek-V3.2",
+    "Kimi-K2.5",
+    "hermes-3-llama-3.1-8b"
+  ],
+  "gamma_within": {
+    "grok-4-20-reasoning": 0.2,
+    "gpt-4o": 0.10810810810810811,
+    "gpt-5.4-nano": 0.05405405405405406,
+    "DeepSeek-V3.2": 0.0,
+    "Kimi-K2.5": 0.15384615384615385,
+    "hermes-3-llama-3.1-8b": 0.08108108108108109
+  },
+  "gamma_between": {
+    "objective": 0.125,
+    "interpretive": 0.0,
+    "judge": 0.2,
+    "flapper": 0.5
+  },
+  "gamma_between_weighted": 0.1625,
+  "judge_quality": {
+    "objective": {
+      "judge_none_rate": null,
+      "model_none_rate": 0.024242424242424242,
+      "judge_none_count": 0,
+      "model_none_count": 8,
+      "total_verdicts": 0
+    },
+    "interpretive": {
+      "judge_none_rate": 0.0,
+      "model_none_rate": 0.03611111111111111,
+      "judge_none_count": 0,
+      "model_none_count": 13,
+      "total_verdicts": 360
+    },
+    "judge": {
+      "judge_none_rate": 0.0,
+      "model_none_rate": 0.08148148148148149,
+      "judge_none_count": 0,
+      "model_none_count": 22,
+      "total_verdicts": 270
+    },
+    "flapper": {
+      "judge_none_rate": 0.0,
+      "model_none_rate": 0.13333333333333333,
+      "judge_none_count": 0,
+      "model_none_count": 20,
+      "total_verdicts": 150
+    }
+  },
+  "verdict_hashes": {
+    "grok-4-20-reasoning": "3b572a069685cb4438d1073e64f92113cb8a23788be7facb5eb83ce9b4ff3120",
+    "gpt-4o": "104aae0773c4a135c4f2f89d9a85a2008a7303f24a0e110566bd42c9404c6fa2",
+    "gpt-5.4-nano": "bbb8580be8abf26f67cc0522346024f56b465770725a22fe79472586638c8148",
+    "DeepSeek-V3.2": "4d1fb788181d0c2b03b2170304d54ca085997b9b8fee277da0ef613b2aa27ab3",
+    "Kimi-K2.5": "5c19328efb94f8036b6455d8d3a31f9477a74332ab2b44e783a4f947801eee34",
+    "hermes-3-llama-3.1-8b": "fdbbb12e729a09019ceae7347fcd22a06c0a4dcbe1ed0e70f21b2af714a99b06"
+  }
+}

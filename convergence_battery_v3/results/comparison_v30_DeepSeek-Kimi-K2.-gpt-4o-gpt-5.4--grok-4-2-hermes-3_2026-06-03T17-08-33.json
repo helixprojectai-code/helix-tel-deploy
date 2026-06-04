@@ -1,0 +1,65 @@
+{
+  "version": "3.0",
+  "timestamp": "2026-06-03T17-08-33",
+  "models": [
+    "grok-4-20-reasoning",
+    "gpt-4o",
+    "gpt-5.4-nano",
+    "DeepSeek-V3.2",
+    "Kimi-K2.5",
+    "hermes-3-llama-3.1-8b"
+  ],
+  "gamma_within": {
+    "grok-4-20-reasoning": 0.1388888888888889,
+    "gpt-4o": 0.05405405405405406,
+    "gpt-5.4-nano": 0.05555555555555555,
+    "DeepSeek-V3.2": 0.0,
+    "Kimi-K2.5": 0.13333333333333333,
+    "hermes-3-llama-3.1-8b": 0.05405405405405406
+  },
+  "gamma_between": {
+    "objective": 0.1111111111111111,
+    "interpretive": 0.0,
+    "judge": 0.0,
+    "flapper": null
+  },
+  "gamma_between_weighted": 0.0392156862745098,
+  "judge_quality": {
+    "objective": {
+      "judge_none_rate": null,
+      "model_none_rate": 0.021212121212121213,
+      "judge_none_count": 0,
+      "model_none_count": 7,
+      "total_verdicts": 0
+    },
+    "interpretive": {
+      "judge_none_rate": 0.0,
+      "model_none_rate": 0.030555555555555555,
+      "judge_none_count": 0,
+      "model_none_count": 11,
+      "total_verdicts": 360
+    },
+    "judge": {
+      "judge_none_rate": 0.0,
+      "model_none_rate": 0.08148148148148149,
+      "judge_none_count": 0,
+      "model_none_count": 22,
+      "total_verdicts": 270
+    },
+    "flapper": {
+      "judge_none_rate": 0.0,
+      "model_none_rate": 0.14666666666666667,
+      "judge_none_count": 0,
+      "model_none_count": 22,
+      "total_verdicts": 150
+    }
+  },
+  "verdict_hashes": {
+    "grok-4-20-reasoning": "1e8a32cf574c8ed29c26f007a94e7eb5fd8566eca5deaaa4a8c1c095fa00a8c4",
+    "gpt-4o": "5b648ede71e2c1809bd88bd58c7cde9698010b500b529210e3f19308d9107bc2",
+    "gpt-5.4-nano": "bbb8580be8abf26f67cc0522346024f56b465770725a22fe79472586638c8148",
+    "DeepSeek-V3.2": "4d1fb788181d0c2b03b2170304d54ca085997b9b8fee277da0ef613b2aa27ab3",
+    "Kimi-K2.5": "220ab5208a6963174a0c22c10ac596e3686b2f40366dc4fd3cedce44cfd1dc36",
+    "hermes-3-llama-3.1-8b": "fbad20eeef58d17f80fe31044b4d430a4b566bfbc736c048e7ba6b30507e3901"
+  }
+}
