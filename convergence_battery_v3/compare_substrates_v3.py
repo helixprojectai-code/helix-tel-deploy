@@ -1,8 +1,15 @@
 #!/usr/bin/env python3
 """
 Cross-Substrate Convergence Analysis
-Version: 3.0
-Date: 2026-06-03
+Version: 3.0.2
+Date: 2026-06-05
+
+Changes in 3.0.2:
+  (7) RESPONSE DIVERSITY + PASS ENTROPY per model (compliance cage signals).
+      Uses response_diversity_by_test / pass_entropy_by_test when present;
+      rebuilds from verdict_logging snippets on older archives.
+  (8) SUSPICIOUS PERFECTION flag: low γ_within + low mean diversity
+      (petrified outputs vs. genuine stability).
 
 Changes over 1.0:
   (1) KEYED BY MODEL not substrate. v1.0 collapsed all azure runs into one
@@ -20,8 +27,8 @@ Changes over 1.0:
   (6) Archive keyed by model names not substrate string.
 
 Usage:
-  python compare_substrates_v3.py results/convergence_v29_*.json
-  python compare_substrates_v3.py results/convergence_v29_azure_*.json results/convergence_v29_local_*.json
+  python compare_substrates_v3.py results/convergence_v301_*.json
+  python compare_substrates_v3.py results/convergence_v30_*.json results/convergence_v301_*.json
 """
 
 import json
@@ -31,8 +38,16 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional, Tuple
 from collections import defaultdict
 
+from convergence_battery_v3 import (
+    calculate_response_diversity,
+    calculate_pass_entropy,
+)
 
 CATEGORIES = ["objective", "interpretive", "judge", "flapper"]
+CAGE_DIVERSITY_FLOOR = 0.2   # 1/5 unique strings at 5 passes
+FROZEN_ENTROPY_CEILING = 0.0
+SUSPICIOUS_GAMMA_CEILING = 0.05
+SUSPICIOUS_DIVERSITY_CEILING = 0.35
 
 
 def load_result(path: str) -> Dict[str, Any]:
@@ -178,6 +193,145 @@ def none_coverage(model_vectors: Dict) -> Dict[str, Dict[str, int]]:
     return coverage
 
 
+def extract_diversity_maps(
+    result: Dict[str, Any],
+) -> Tuple[Dict[str, float], Dict[str, float], str]:
+    """
+    Per-test unique-ratio and normalized Shannon entropy across passes.
+
+    Returns (diversity_map, entropy_map, source) where source is
+    'battery' (full strings) or 'snippet_fallback' (200-char snippets).
+    """
+    div = result.get("response_diversity_by_test")
+    ent = result.get("pass_entropy_by_test")
+    if div:
+        if not ent:
+            ent = {
+                tid: round(calculate_pass_entropy(resps), 4)
+                for tid, resps in _responses_by_test_from_logging(result, snippets_only=True).items()
+            }
+            ent_source = "snippet_entropy"
+        else:
+            ent_source = "battery"
+        return div, ent, "battery" if ent_source == "battery" else "battery+snippet_ent"
+
+    by_pass = _responses_by_test_from_logging(result, snippets_only=True)
+    diversity_map = {}
+    entropy_map = {}
+    for tid, ordered in by_pass.items():
+        diversity_map[tid] = round(calculate_response_diversity(ordered), 4)
+        entropy_map[tid] = round(calculate_pass_entropy(ordered), 4)
+    return diversity_map, entropy_map, "snippet_fallback"
+
+
+def _responses_by_test_from_logging(
+    result: Dict[str, Any], *, snippets_only: bool
+) -> Dict[str, List[str]]:
+    """Group pass-level strings by test_id (ordered by pass number)."""
+    by_pass: Dict[str, Dict[int, str]] = defaultdict(dict)
+    for entry in result.get("verdict_logging", []):
+        tid = entry["test_id"]
+        text = entry.get("response_snippet") or "" if snippets_only else (
+            entry.get("response_full") or entry.get("response_snippet") or ""
+        )
+        by_pass[tid][entry["pass"]] = text
+    return {tid: [by_pass[tid][p] for p in sorted(by_pass[tid])] for tid in by_pass}
+
+
+def _test_categories(result: Dict[str, Any]) -> Dict[str, str]:
+    """test_id -> category from verdict_logging."""
+    out = {}
+    for entry in result.get("verdict_logging", []):
+        out.setdefault(entry["test_id"], entry["category"])
+    return out
+
+
+def summarize_response_diversity(
+    result: Dict[str, Any], label: str
+) -> Dict[str, Any]:
+    """Aggregate cage metrics for one model run."""
+    div_map, ent_map, source = extract_diversity_maps(result)
+    if not div_map:
+        return {
+            "model": label,
+            "source": source,
+            "n_tests": 0,
+            "mean_response_diversity": None,
+            "mean_pass_entropy": None,
+            "cage_tests": 0,
+            "frozen_tests": 0,
+            "by_category": {},
+        }
+
+    div_vals = list(div_map.values())
+    ent_vals = list(ent_map.values())
+    cat_map = _test_categories(result)
+    by_cat: Dict[str, List[float]] = defaultdict(list)
+    for tid, d in div_map.items():
+        cat = cat_map.get(tid, "unknown")
+        by_cat[cat].append(d)
+
+    n_passes = result.get("metadata", {}).get("passes", 5)
+    cage_threshold = CAGE_DIVERSITY_FLOOR if n_passes >= 5 else (1.0 / max(n_passes, 1))
+
+    return {
+        "model": label,
+        "source": source,
+        "n_tests": len(div_map),
+        "mean_response_diversity": round(sum(div_vals) / len(div_vals), 4),
+        "mean_pass_entropy": round(sum(ent_vals) / len(ent_vals), 4),
+        "cage_tests": sum(1 for v in div_vals if v <= cage_threshold + 1e-9),
+        "frozen_tests": sum(1 for v in ent_vals if v <= FROZEN_ENTROPY_CEILING + 1e-9),
+        "by_category": {
+            cat: round(sum(vals) / len(vals), 4) for cat, vals in by_cat.items()
+        },
+    }
+
+
+def response_diversity_report(
+    results: List[Dict], model_labels: Dict[int, str]
+) -> Dict[str, Dict[str, Any]]:
+    """Keyed by deduplicated model label used in model_vectors."""
+    report = {}
+    for i, res in enumerate(results):
+        label = model_labels[i]
+        report[label] = summarize_response_diversity(res, label)
+    return report
+
+
+def flag_suspicious_perfection(
+    results: List[Dict],
+    model_labels: Dict[int, str],
+    div_report: Dict[str, Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    """
+    Low γ + low output diversity → possible petrified compliance (not reasoning stability).
+    """
+    flags = []
+    for i, res in enumerate(results):
+        label = model_labels[i]
+        gamma = res.get("wobble_metrics", {}).get("overall_weighted")
+        dr = div_report.get(label, {})
+        mean_div = dr.get("mean_response_diversity")
+        if gamma is None or mean_div is None:
+            continue
+        jq = res.get("judge_quality", {})
+        flapper_lc = (jq.get("flapper") or {}).get("low_conf_rate")
+        if (
+            gamma <= SUSPICIOUS_GAMMA_CEILING
+            and mean_div <= SUSPICIOUS_DIVERSITY_CEILING
+        ):
+            flags.append({
+                "model": label,
+                "gamma_within": round(gamma, 4),
+                "mean_response_diversity": mean_div,
+                "mean_pass_entropy": dr.get("mean_pass_entropy"),
+                "cage_tests": dr.get("cage_tests"),
+                "flapper_judge_low_conf": flapper_lc,
+            })
+    return flags
+
+
 def verdict_hash(vector: Dict[str, List]) -> str:
     flat = []
     for cat in CATEGORIES:
@@ -187,10 +341,12 @@ def verdict_hash(vector: Dict[str, List]) -> str:
 
 
 def print_report(results: List[Dict], model_vectors: Dict,
-                 gamma_between: Dict, jq: Dict, nc: Dict) -> None:
+                 gamma_between: Dict, jq: Dict, nc: Dict,
+                 div_report: Dict[str, Dict[str, Any]],
+                 suspicious: List[Dict[str, Any]]) -> None:
     models = list(model_vectors.keys())
     print(f"\n{'='*70}")
-    print(f"CROSS-MODEL CONVERGENCE ANALYSIS v3.0")
+    print(f"CROSS-MODEL CONVERGENCE ANALYSIS v3.0.2")
     print(f"{'='*70}\n")
     print(f"Models ({len(models)}):")
     for res in results:
@@ -212,6 +368,38 @@ def print_report(results: List[Dict], model_vectors: Dict,
         print(f"  {cat:<14} {jnr:<14} {mnr:<14} {q['total_verdicts']}")
     print(f"\n  Judge-None% = judge produced ambiguous/unparseable output")
     print(f"  Model-None% = model returned blank/error (excluded from gamma)")
+
+    print(f"\n{'='*70}")
+    print(f"RESPONSE DIVERSITY / PASS ENTROPY  (compliance cage)")
+    print(f"{'='*70}")
+    print(f"  {'Model':<25} {'MeanDiv':<10} {'MeanEnt':<10} {'Cage':<12} {'Frozen':<10} {'Src'}")
+    print(f"  {'-'*72}")
+    for label in models:
+        dr = div_report.get(label, {})
+        md = dr.get("mean_response_diversity")
+        me = dr.get("mean_pass_entropy")
+        md_s = f"{md:.4f}" if md is not None else "  n/a"
+        me_s = f"{me:.4f}" if me is not None else "  n/a"
+        cage = dr.get("cage_tests", 0)
+        n = dr.get("n_tests", 0)
+        fr = dr.get("frozen_tests", 0)
+        src = dr.get("source", "?")[:7]
+        print(f"  {label:<25} {md_s:<10} {me_s:<10} {cage}/{n:<8} {fr}/{n:<6} {src}")
+    print(f"\n  MeanDiv = unique pass strings / pass count (low = copy-paste cage)")
+    print(f"  MeanEnt = normalized Shannon on pass strings (0 = identical all passes)")
+    print(f"  Cage = tests at diversity floor (<= {CAGE_DIVERSITY_FLOOR} at 5 passes)")
+
+    if suspicious:
+        print(f"\n{'='*70}")
+        print(f"SUSPICIOUS PERFECTION  (low γ + low diversity)")
+        print(f"{'='*70}")
+        for row in suspicious:
+            lc = row.get("flapper_judge_low_conf")
+            lc_s = f"{lc:.3f}" if lc is not None else "  n/a"
+            print(f"  {row['model']:<25} γ={row['gamma_within']:.4f}  "
+                  f"div={row['mean_response_diversity']:.4f}  "
+                  f"cage={row['cage_tests']}  flapper_low_conf={lc_s}")
+        print(f"  (γ<={SUSPICIOUS_GAMMA_CEILING}, diversity<={SUSPICIOUS_DIVERSITY_CEILING})")
 
     print(f"\n{'='*70}")
     print(f"γ_BETWEEN (cross-model divergence)")
@@ -274,19 +462,27 @@ def print_report(results: List[Dict], model_vectors: Dict,
 
 
 def archive(results: List[Dict], model_vectors: Dict,
-            gamma_between: Dict, jq: Dict, out_dir: str = "results") -> str:
+            gamma_between: Dict, jq: Dict,
+            div_report: Dict[str, Dict[str, Any]],
+            suspicious: List[Dict[str, Any]],
+            out_dir: str = "results") -> str:
     Path(out_dir).mkdir(exist_ok=True)
     ts = results[0]["metadata"]["timestamp"].replace(":", "-")[:19]
     names = "-".join(sorted(model_key(r)[:8] for r in results))
-    path = Path(out_dir) / f"comparison_v30_{names}_{ts}.json"
+    path = Path(out_dir) / f"comparison_v301_{names}_{ts}.json"
     output = {
-        "version": "3.0",
+        "version": "3.0.2",
         "timestamp": ts,
-        "models": [model_key(r) for r in results],
-        "gamma_within": {model_key(r): r["wobble_metrics"].get("overall_weighted") for r in results},
+        "models": list(model_vectors.keys()),
+        "gamma_within": {
+            model_labels[i]: results[i]["wobble_metrics"].get("overall_weighted")
+            for i in range(len(results))
+        },
         "gamma_between": gamma_between,
         "gamma_between_weighted": compute_gamma_between_weighted(gamma_between, model_vectors),
         "judge_quality": jq,
+        "response_diversity": div_report,
+        "suspicious_perfection": suspicious,
         "verdict_hashes": {m: verdict_hash(model_vectors[m]) for m in model_vectors},
     }
     with open(path, "w") as f:
@@ -302,6 +498,7 @@ if __name__ == "__main__":
 
     results = []
     model_vectors = {}
+    model_labels: Dict[int, str] = {}
     seen_models = {}
 
     print(f"Loading {len(sys.argv) - 1} result file(s)...")
@@ -313,8 +510,10 @@ if __name__ == "__main__":
             if key in seen_models:
                 key = f"{key}[{res['metadata']['substrate']}]"
             seen_models[key] = True
+            idx = len(results)
             results.append(res)
             model_vectors[key] = extract_consensus_vector(res)
+            model_labels[idx] = key
             print(f"  OK {key}")
         except Exception as e:
             print(f"  FAIL {fpath}: {e}")
@@ -323,6 +522,8 @@ if __name__ == "__main__":
     gamma_between = compute_gamma_between(model_vectors)
     jq = judge_quality_report(results)
     nc = none_coverage(model_vectors)
+    div_report = response_diversity_report(results, model_labels)
+    suspicious = flag_suspicious_perfection(results, model_labels, div_report)
 
-    print_report(results, model_vectors, gamma_between, jq, nc)
-    archive(results, model_vectors, gamma_between, jq)
+    print_report(results, model_vectors, gamma_between, jq, nc, div_report, suspicious)
+    archive(results, model_vectors, gamma_between, jq, div_report, suspicious)

@@ -61,13 +61,41 @@ export OPENAI_API_KEY="sk-proj-..."
 - Reasoning models (GPT-5 family + o1/o3/o4*) automatically drop `temperature` + `seed` (not supported) and use `max_completion_tokens`.
 - GPT-5 family + o-series use robust prefix-based detection (plus expanded list + `_is_reasoning_model`) so new models like `gpt-5.5`, `gpt-5.5-pro`, future variants work out of the box without editing code. Same logic applies to Azure client.
 
+### xAI Grok Build (or any OpenAI-compatible custom endpoint)
+Use the `local` substrate + `LOCAL_LM_ENDPOINT` override (the Local client was extended to handle auth + reasoning models).
+```powershell
+$env:LOCAL_LM_ENDPOINT = "https://api.x.ai/v1/chat/completions"
+$env:XAI_API_KEY = "xai-..."          # or $env:OPENAI_API_KEY
+```
+Then run:
+```powershell
+python convergence_battery_v3.py local grok-build-0.1 5 local hermes-3-llama-3.1-8b
+```
+- Model arg: `grok-build-0.1` (or aliases like grok-code-fast-1).
+- grok-build* models are treated as reasoning (no temperature/seed, correct max token param).
+- Results archived with substrate="local" (you can note the actual provider in analysis / work logs).
+
+### Anthropic (Claude)
+```bash
+export ANTHROPIC_API_KEY="sk-ant-..."
+```
+- Substrate: `anthropic` or `claude`
+- Model arg: `claude-sonnet-4-6`, `claude-3-5-sonnet-20241022`, `claude-3-opus-20240229`, etc. (use the exact name from Anthropic docs).
+- Uses native Anthropic /v1/messages API (different from OpenAI format).
+- Example:
+```powershell
+python convergence_battery_v3.py anthropic claude-sonnet-4-6 5 local hermes-3-llama-3.1-8b
+```
+- Claude supports temperature. No seed param.
+- The client reuses the same retry/backoff and error handling as other substrates.
+
 ## Output
 
 Results are archived to:
 ```
-./results/convergence_v30_{substrate}_{timestamp}.json
+./results/convergence_v301_{substrate}_{timestamp}.json
 ```
-(or $HELIX_RESULTS_DIR if set). v3 uses the v30_ prefix and richer metadata (latencies, judge_quality, stability flags, etc.).
+(or $HELIX_RESULTS_DIR if set). **v3.0.1+** uses the `v301_` prefix; v3.0 archives remain `v30_`. Richer metadata includes latencies, judge_quality, stability flags, response_diversity, pass_entropy, etc.
 
 Each result file contains:
 - **metadata**: timestamp, model, substrate, test counts
@@ -214,7 +242,7 @@ print(f"Verdict: {verdict}")
 2. Run on openai (direct gpt-4o / o3-mini) — now supported without Azure
 3. Run on azure (for enterprise Azure OpenAI deployments)
 4. Run on DeepSeek and Kimi (cross-provider)
-5. Compare via compare_substrates_v3.py results/convergence_v30_*.json
+5. Compare via compare_substrates_v3.py results/convergence_v301_*.json (or mixed v30_ + v301_)
 6. Analyze judge_quality + γ metrics; feed findings back to chronicle/
 
 See also EVOLUTION.md in this directory for the full development story and rationale behind the client and model handling changes.

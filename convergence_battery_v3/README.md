@@ -47,6 +47,7 @@ python convergence_battery_v3.py <substrate> [model] [passes] [judge_substrate] 
 - `deepseek`
 - `kimi`
 - `kimi-azure`
+- `anthropic` / `claude` (Anthropic Claude models)
 
 ### Minimal Runs (default model + 5 passes + local judge)
 ```powershell
@@ -72,6 +73,8 @@ python convergence_battery_v3.py openai o4-mini
 python convergence_battery_v3.py deepseek deepseek-chat
 python convergence_battery_v3.py kimi kimi-k2.6
 python convergence_battery_v3.py kimi-azure "Kimi-K2.5"
+python convergence_battery_v3.py anthropic claude-sonnet-4-6
+python convergence_battery_v3.py claude "claude-3-5-sonnet-20241022"
 ```
 
 ### With Custom Passes
@@ -172,12 +175,12 @@ There's also a small `list_openai_models.py` in this directory that does the sam
 ## Results & Analysis
 
 - Output directory: `./results/` or `$env:HELIX_RESULTS_DIR`
-- Files: `convergence_v30_<substrate>_<timestamp>.json`
+- Files: `convergence_v301_<substrate>_<timestamp>.json` (v3.0.1+); legacy `convergence_v30_*` (v3.0)
 - Cross-run analysis:
   ```powershell
-  python compare_substrates_v3.py results/convergence_v30_*.json
-  # or specific files
-  python compare_substrates_v3.py results/convergence_v30_openai_*.json results/convergence_v30_azure_*.json
+  python compare_substrates_v3.py results/convergence_v301_*.json
+  # mixed with v3.0 runs:
+  python compare_substrates_v3.py results/convergence_v30_*.json results/convergence_v301_*.json
   ```
 
 ---

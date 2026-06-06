@@ -25,6 +25,13 @@ The goal is to make the *journey* visible, not just the final polished state.
 
 - **OpenAI direct substrate (added in v3 era)**: Native `openai` substrate using `OPENAI_API_KEY` + `https://api.openai.com/v1/chat/completions`. Parallel to Azure. Includes reasoning-model handling (drop temperature, use `max_completion_tokens`).
 
+- **v3.0.1 (2026-06-05)**: Compliance-cage observability on model *outputs* (not just verdict flips).
+  - Per-test **response_diversity** (unique string ratio across passes).
+  - Per-test **pass_entropy** (normalized Shannon on pass-level responses).
+  - `calculate_token_entropy()` alias for the unique-ratio metric.
+  - Result archives use `convergence_v301_*` prefix; metadata `version: "3.0.1"`.
+  - v3.0 runs remain `convergence_v30_*` — comparable via `compare_substrates_v3.py` on mixed globs.
+
 - **Post-3.0 client robustness**: 
   - Added `_needs_max_completion_tokens()` helper (exact list + broad `gpt-5*` / `o1/o3/o4*` prefix matching).
   - Expanded `MAX_COMPLETION_TOKENS_MODELS`.

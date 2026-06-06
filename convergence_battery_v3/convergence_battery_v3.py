@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
 TEL Convergence Battery
-Version: 3.0
-Date: 2026-06-03 (client robustness updates later)
+Version: 3.0.2
+Date: 2026-06-06 (added live per-call usage + cost tracking prints for paid API experiments; does not affect test logic or results)
 
 Headline feature: Judge quality as a first-class metric.
 Extended logging for HTML report generation.
@@ -22,6 +22,15 @@ New in 3.0:
       to 240 chars) in judge_raw field for audit.
   (7) JUDGE QUALITY SUMMARY: per-category None%, low-confidence%,
       and total judge calls surfaced in metadata at end of run.
+  (8) RESPONSE DIVERSITY: per-test unique-response ratio across passes
+      (unique strings / pass count). Low ratio = identical outputs
+      ("compliance cage"); injected into verdict_logging post-run.
+  (9) PASS ENTROPY: per-test normalized Shannon entropy of pass-level
+      response strings (0-1). Catches uneven duplicate splits; complements (8).
+      Alias: calculate_token_entropy() for the unique-ratio cage floor.
+
+New in 3.0.1:
+  - (8)-(9) above formalized; archive prefix convergence_v301_* (3.0 remains v30_).
 
 All v2.9 fixes retained:
   - Empty response guard (blank → None, not False)
@@ -43,8 +52,10 @@ Post-3.0 client robustness (no behavior change for older models):
 """
 
 import json
+import math
 import os
 import time
+from collections import Counter
 from datetime import datetime, timezone
 from typing import List, Dict, Any, Tuple, Optional
 import requests
@@ -67,6 +78,19 @@ CATEGORY_LISTS = {
 ERROR_SENTINEL = "[ERROR"
 
 # Words in judge REASON line that signal low confidence
+BATTERY_VERSION = "3.0.2"
+
+
+def _result_file_prefix(version: str = BATTERY_VERSION) -> str:
+    """Semver to archive tag: 3.0 -> v30, 3.0.1 -> v301."""
+    parts = version.split(".")
+    major, minor = parts[0], parts[1]
+    patch = parts[2] if len(parts) > 2 else ""
+    if patch:
+        return f"v{major}{minor}{patch}"
+    return f"v{major}{minor}"
+
+
 HEDGE_WORDS = {
     "possibly", "unclear", "might", "could", "uncertain", "ambiguous",
     "not sure", "hard to say", "difficult to determine", "partially",
@@ -176,16 +200,54 @@ class APIClient:
 
 
 class LocalLMStudioClient(APIClient):
+    """OpenAI-compatible client via LOCAL_LM_ENDPOINT (local servers, xAI, other custom /v1/chat/completions).
+
+    - Pulls endpoint from LOCAL_LM_ENDPOINT (falls back to localhost:1234).
+    - Supports Bearer auth if XAI_API_KEY or OPENAI_API_KEY is set (only for remote endpoints).
+    - Applies the shared reasoning-model logic (no temperature/seed, correct max_* token key)
+      so grok-build-0.1 and future reasoning models on custom endpoints work without 400s.
+    - Special handling for mixed runs: when using a cloud endpoint for the *target* (e.g. xAI via LOCAL_LM_ENDPOINT)
+      but a local judge (e.g. "hermes-..."), the judge client forces the default localhost endpoint
+      so the judge model name isn't sent to the wrong API.
+    """
     def __init__(self, endpoint: str = None, model: str = "hermes-3-llama-3.1-8b"):
         super().__init__()
         self.endpoint = endpoint or APIConfig.get_local_endpoint()
         self.model = model
 
+        # Mixed-endpoint support for target-on-custom + judge-on-local
+        model_lower = (model or "").lower()
+        likely_local_model = any(x in model_lower for x in [
+            "hermes", "llama", "gemma", "phi", "qwen", "mistral", "vicuna", "local"
+        ])
+        endpoint_looks_remote = self.endpoint and any(x in self.endpoint.lower() for x in [
+            "x.ai", "api.openai", "deepseek", "moonshot", "azure", "groq", "together"
+        ])
+        if likely_local_model and endpoint_looks_remote:
+            self.endpoint = "http://localhost:1234/v1/chat/completions"
+
+        # Only send auth for remote endpoints (localhost judges usually don't need/ want it)
+        self.key = None
+        if self.endpoint and not any(x in self.endpoint.lower() for x in [
+            "localhost", "127.0.0.1", ":1234", ":11434", "0.0.0.0"
+        ]):
+            self.key = os.getenv("XAI_API_KEY") or os.getenv("OPENAI_API_KEY")
+
     def chat(self, messages: List[dict], temperature: float) -> Tuple[str, float]:
+        token_key = get_token_key(self.model)
+        payload = {
+            "model": self.model,
+            "messages": messages,
+            token_key: 500,
+        }
+        headers = {"Authorization": f"Bearer {self.key}"} if self.key else {}
+
+        if not _is_reasoning_model(self.model):
+            payload["temperature"] = temperature
+            payload["seed"] = 0
+
         return self._post(
-            self.endpoint, headers={},
-            payload={"model": self.model, "messages": messages,
-                     "temperature": temperature, "max_tokens": 500, "seed": 0},
+            self.endpoint, headers=headers, payload=payload
         )
 
 
@@ -193,6 +255,8 @@ MAX_COMPLETION_TOKENS_MODELS = {
     "gpt-5.4-nano", "gpt-5.5", "gpt-5", "o1", "o1-mini", "o3", "o3-mini", "o4-mini",
     # Added current GPT-5 family (as of 2026) for direct OpenAI + Azure deployments
     "gpt-5.4", "gpt-5.4-mini", "gpt-5.4-pro", "gpt-5.5-pro",
+    # xAI Grok Build / agentic coding models (reasoning-style, no temperature/seed in some modes)
+    "grok-build-0.1", "grok-code-fast-1", "grok-code-fast",
 }
 
 
@@ -316,6 +380,95 @@ class KimiAzureClient(AzureOpenAIClient):
         super().__init__(model=model)
 
 
+class AnthropicClient(APIClient):
+    """Anthropic (Claude) API client.
+
+    Requires ANTHROPIC_API_KEY.
+    Model examples: "claude-sonnet-4-6", "claude-3-5-sonnet-20241022", "claude-3-opus-20240229", etc.
+    Uses native Anthropic /v1/messages format (not OpenAI compatible).
+    """
+    def __init__(self, model: str = "claude-sonnet-4-6"):
+        super().__init__()
+        self.key = APIConfig._require("ANTHROPIC_API_KEY")
+        self.model = model
+
+    def chat(self, messages: List[dict], temperature: float) -> Tuple[str, float]:
+        url = "https://api.anthropic.com/v1/messages"
+        headers = {
+            "x-api-key": self.key,
+            "anthropic-version": "2023-06-01",
+            "content-type": "application/json"
+        }
+        payload = {
+            "model": self.model,
+            "max_tokens": 1024,
+            "messages": messages,
+            "temperature": temperature,
+        }
+        last_err = None
+        for attempt in range(1, self.retries + 1):
+            t0 = time.monotonic()
+            try:
+                r = requests.post(url, headers=headers, json=payload, timeout=self.timeout)
+                latency = (time.monotonic() - t0) * 1000
+                r.raise_for_status()
+                self.call_count += 1
+                data = r.json()
+                # Anthropic response format
+                content = ""
+                if "content" in data and isinstance(data["content"], list):
+                    for block in data["content"]:
+                        if isinstance(block, dict) and block.get("type") == "text":
+                            content = block.get("text", "") or content
+                # Usage for cost tracking (Anthropic returns this)
+                usage = data.get("usage", {})
+                in_tokens = usage.get("input_tokens", 0)
+                out_tokens = usage.get("output_tokens", 0)
+                print(f"  [Anthropic usage] in={in_tokens} out={out_tokens}", flush=True)
+                # Rough cost estimate — update rates for claude-sonnet-4-6 / current Sonnet pricing
+                # As of late 2024/early 2025: ~$3/M input, $15/M output for 3.5 Sonnet class
+                # Adjust for your model/version and check Anthropic pricing page
+                est_cost = (in_tokens * 3 + out_tokens * 15) / 1_000_000
+                print(f"  [est. cost this call] ${est_cost:.6f}", flush=True)
+                return content, latency
+            except requests.exceptions.HTTPError as e:
+                latency = (time.monotonic() - t0) * 1000
+                code = e.response.status_code if e.response is not None else None
+                if code in TRANSIENT_HTTP_CODES:
+                    last_err = e
+                    if attempt < self.retries:
+                        wait = self.backoff * (2 ** (attempt - 1))
+                        self.retry_count += 1
+                        print(f"\n[retry {attempt}/{self.retries - 1}] HTTP {code} (transient); waiting {wait:.0f}s", flush=True)
+                        time.sleep(wait)
+                    continue
+                last_err = e
+                if code == 400 and e.response is not None:
+                    try:
+                        body = e.response.text[:400]
+                        print(f"  [400 response body] {body}", flush=True)
+                    except Exception:
+                        pass
+                break
+            except (requests.exceptions.ConnectionError,
+                    requests.exceptions.Timeout) as e:
+                latency = (time.monotonic() - t0) * 1000
+                last_err = e
+                if attempt < self.retries:
+                    wait = self.backoff * (2 ** (attempt - 1))
+                    self.retry_count += 1
+                    print(f"\n[retry {attempt}/{self.retries - 1}] transient "
+                          f"({type(e).__name__}); waiting {wait:.0f}s", flush=True)
+                    time.sleep(wait)
+            except Exception as e:
+                latency = (time.monotonic() - t0) * 1000
+                last_err = e
+                break
+        self.error_count += 1
+        print(f"\n[ERROR] call failed after {attempt} attempt(s): {last_err}")
+        return f"{ERROR_SENTINEL}: {last_err}]", 0.0
+
+
 def make_client(substrate: str, model: Optional[str] = None) -> APIClient:
     if substrate == "local":
         return LocalLMStudioClient(model=model or "hermes-3-llama-3.1-8b")
@@ -329,6 +482,8 @@ def make_client(substrate: str, model: Optional[str] = None) -> APIClient:
         return KimiDirectClient(model=model or "kimi-k2.6")
     if substrate == "kimi-azure":
         return KimiAzureClient(model=model or "Kimi-K2.5")
+    if substrate in ("anthropic", "claude"):
+        return AnthropicClient(model=model or "claude-sonnet-4-6")
     raise ValueError(f"Unknown substrate: {substrate}")
 
 
@@ -409,6 +564,42 @@ class Judge:
 # RUNNER
 # ============================================================================
 
+def calculate_response_diversity(responses: List[str]) -> float:
+    """
+    Unique-response ratio across passes for one test_id.
+
+    1.0 = every pass produced a distinct string; 0.2 with 5 passes means
+    one string repeated (compliance cage). Cheap, interpretable cage signal.
+    """
+    if not responses:
+        return 0.0
+    return len(set(responses)) / len(responses)
+
+
+def calculate_token_entropy(responses: List[str]) -> float:
+    """Alias for unique-response ratio (proposed cage metric name)."""
+    return calculate_response_diversity(responses)
+
+
+def calculate_pass_entropy(responses: List[str]) -> float:
+    """
+    Normalized Shannon entropy (0-1) of pass-level response strings.
+
+    Identical outputs on all passes -> 0.0. All distinct -> 1.0.
+    Differs from unique ratio when duplicates split unevenly (e.g. 4+1).
+    """
+    if not responses:
+        return 0.0
+    counts = Counter(responses)
+    n = len(responses)
+    probs = [c / n for c in counts.values()]
+    entropy = -sum(p * math.log2(p) for p in probs)
+    max_entropy = math.log2(len(counts)) if len(counts) > 1 else 0.0
+    if max_entropy <= 0:
+        return 0.0
+    return entropy / max_entropy
+
+
 def _objective_verdict(test: Dict, response: str) -> Tuple[Optional[bool], str]:
     if response.startswith(ERROR_SENTINEL):
         return None, "skipped: error response"
@@ -449,7 +640,7 @@ def run_battery(substrate: str, model_name: str, passes: int = 5,
             "judge_model": judge_model or "default",
             "total_tests": len(all_tests),
             "passes": passes,
-            "version": "3.0",
+            "version": BATTERY_VERSION,
             "category_counts": counts,
         },
         "pass_verdict_vectors": {},
@@ -457,11 +648,15 @@ def run_battery(substrate: str, model_name: str, passes: int = 5,
         "verdict_logging": [],
         "wobble_metrics": {},
         "judge_quality": {},      # per-category judge quality summary
+        "response_diversity_by_test": {},  # test_id -> unique ratio across passes
+        "pass_entropy_by_test": {},        # test_id -> normalized Shannon 0-1
         "stats": {},
     }
 
+    responses_by_test: Dict[str, List[str]] = {}
+
     print(f"\n{'='*70}")
-    print(f"BATTERY v3.0  |  {len(all_tests)} tests x {passes} passes  |  {model_name}")
+    print(f"BATTERY v{BATTERY_VERSION}  |  {len(all_tests)} tests x {passes} passes  |  {model_name}")
     print(f"OBJ {counts['objective']}  INT {counts['interpretive']}  "
           f"JDG {counts['judge']}  FLP {counts['flapper']}")
     print(f"History-dependent (excl from gamma): {sorted(HISTORY_DEPENDENT_IDS)}")
@@ -506,6 +701,7 @@ def run_battery(substrate: str, model_name: str, passes: int = 5,
                     verdict = judge_data["verdict"]
 
                 pass_vec[c].append(verdict)
+                responses_by_test.setdefault(tid, []).append(response)
                 results["verdict_logging"].append({
                     "pass": p,
                     "test_id": tid,
@@ -521,6 +717,8 @@ def run_battery(substrate: str, model_name: str, passes: int = 5,
                     "low_confidence": judge_data["low_confidence"],
                     "skip_reason": judge_data.get("skip_reason"),
                     "stable": None,  # filled in post-run
+                    "response_diversity": None,  # filled in post-run (unique ratio)
+                    "pass_entropy": None,        # filled in post-run (Shannon)
                     "ts": _utcnow(),
                 })
 
@@ -539,8 +737,9 @@ def run_battery(substrate: str, model_name: str, passes: int = 5,
             "max_model_latency_ms": round(max(pass_latencies), 1) if pass_latencies else 0,
         }
 
-    # Post-run: annotate stability into verdict_logging
+    # Post-run: annotate stability + response diversity into verdict_logging
     _annotate_stability(results)
+    _annotate_response_diversity(results, responses_by_test)
     _compute_wobble(results)
     _compute_judge_quality(results)
 
@@ -582,6 +781,26 @@ def _annotate_stability(results: Dict[str, Any]) -> None:
 
     for entry in results["verdict_logging"]:
         entry["stable"] = stable_map.get(entry["test_id"])
+
+
+def _annotate_response_diversity(
+    results: Dict[str, Any], responses_by_test: Dict[str, List[str]]
+) -> None:
+    """Per-test cage signals across passes; same values on every log row for that test."""
+    diversity_map = {
+        tid: round(calculate_response_diversity(resps), 4)
+        for tid, resps in responses_by_test.items()
+    }
+    entropy_map = {
+        tid: round(calculate_pass_entropy(resps), 4)
+        for tid, resps in responses_by_test.items()
+    }
+    results["response_diversity_by_test"] = diversity_map
+    results["pass_entropy_by_test"] = entropy_map
+    for entry in results["verdict_logging"]:
+        tid = entry["test_id"]
+        entry["response_diversity"] = diversity_map.get(tid)
+        entry["pass_entropy"] = entropy_map.get(tid)
 
 
 def _compute_wobble(results: Dict[str, Any]) -> None:
@@ -678,6 +897,22 @@ def _print_summary(results: Dict[str, Any]) -> None:
         lc = f"{q['low_conf_rate']:.3f}" if q.get('low_conf_rate') is not None else "  n/a"
         print(f"  {c:<14} {nr:<10} {lc:<10} {q.get('total', 0)}")
 
+    # Response diversity + pass entropy (compliance cage signals)
+    div = results.get("response_diversity_by_test", {})
+    ent = results.get("pass_entropy_by_test", {})
+    if div:
+        vals = list(div.values())
+        avg_div = sum(vals) / len(vals)
+        cage = sum(1 for v in vals if v <= 0.2)
+        print(f"\n{'='*70}\nRESPONSE DIVERSITY (unique strings / passes)\n{'='*70}")
+        print(f"  mean ratio: {avg_div:.4f}   tests at cage floor (<=0.2): {cage}/{len(vals)}")
+    if ent:
+        evals = list(ent.values())
+        avg_ent = sum(evals) / len(evals)
+        frozen = sum(1 for v in evals if v <= 0.0)
+        print(f"\n{'='*70}\nPASS ENTROPY (normalized Shannon on pass strings)\n{'='*70}")
+        print(f"  mean entropy: {avg_ent:.4f}   tests at zero entropy: {frozen}/{len(evals)}")
+
     # Pass stats
     print(f"\n{'='*70}\nPASS STATS\n{'='*70}")
     for pk, pv in results.get("pass_stats", {}).items():
@@ -698,7 +933,8 @@ def archive(results: Dict[str, Any], out_dir: str) -> str:
     os.makedirs(out_dir, exist_ok=True)
     ts = results["metadata"]["timestamp"].replace(":", "-")[:19]
     sub = results["metadata"]["substrate"]
-    path = os.path.join(out_dir, f"convergence_v30_{sub}_{ts}.json")
+    tag = _result_file_prefix(results["metadata"].get("version", BATTERY_VERSION))
+    path = os.path.join(out_dir, f"convergence_{tag}_{sub}_{ts}.json")
     with open(path, "w") as f:
         json.dump(results, f, indent=2, default=str)
     print(f"\narchived -> {path}")
@@ -710,7 +946,7 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("usage: convergence_battery_v3.py <substrate> [model] [passes] "
               "[judge_substrate] [judge_model]")
-        print("  substrate / judge_substrate: local | azure | openai | deepseek | kimi | kimi-azure")
+        print("  substrate / judge_substrate: local | azure | openai | deepseek | kimi | kimi-azure | anthropic | claude")
         sys.exit(1)
 
     substrate = sys.argv[1].lower()

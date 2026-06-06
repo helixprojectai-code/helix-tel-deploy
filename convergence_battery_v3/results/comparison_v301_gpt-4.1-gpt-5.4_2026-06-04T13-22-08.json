@@ -1,0 +1,86 @@
+{
+  "version": "3.0.2",
+  "timestamp": "2026-06-04T13-22-08",
+  "models": [
+    "gpt-5.4",
+    "gpt-4.1"
+  ],
+  "gamma_within": {
+    "gpt-5.4": 0.02702702702702703,
+    "gpt-4.1": 0.05405405405405406
+  },
+  "gamma_between": {
+    "objective": 0.0,
+    "interpretive": 0.0,
+    "judge": 0.1111111111111111,
+    "flapper": 0.0
+  },
+  "gamma_between_weighted": 0.02777777777777778,
+  "judge_quality": {
+    "objective": {
+      "judge_none_rate": null,
+      "model_none_rate": 0.0,
+      "judge_none_count": 0,
+      "model_none_count": 0,
+      "total_verdicts": 0
+    },
+    "interpretive": {
+      "judge_none_rate": 0.0,
+      "model_none_rate": 0.0,
+      "judge_none_count": 0,
+      "model_none_count": 0,
+      "total_verdicts": 120
+    },
+    "judge": {
+      "judge_none_rate": 0.0,
+      "model_none_rate": 0.0,
+      "judge_none_count": 0,
+      "model_none_count": 0,
+      "total_verdicts": 90
+    },
+    "flapper": {
+      "judge_none_rate": 0.0,
+      "model_none_rate": 0.0,
+      "judge_none_count": 0,
+      "model_none_count": 0,
+      "total_verdicts": 50
+    }
+  },
+  "response_diversity": {
+    "gpt-5.4": {
+      "model": "gpt-5.4",
+      "source": "snippet_fallback",
+      "n_tests": 40,
+      "mean_response_diversity": 0.96,
+      "mean_pass_entropy": 0.9671,
+      "cage_tests": 1,
+      "frozen_tests": 1,
+      "by_category": {
+        "objective": 0.8667,
+        "interpretive": 1.0,
+        "judge": 1.0,
+        "flapper": 1.0
+      }
+    },
+    "gpt-4.1": {
+      "model": "gpt-4.1",
+      "source": "snippet_fallback",
+      "n_tests": 40,
+      "mean_response_diversity": 0.97,
+      "mean_pass_entropy": 0.9923,
+      "cage_tests": 0,
+      "frozen_tests": 0,
+      "by_category": {
+        "objective": 0.9,
+        "interpretive": 1.0,
+        "judge": 1.0,
+        "flapper": 1.0
+      }
+    }
+  },
+  "suspicious_perfection": [],
+  "verdict_hashes": {
+    "gpt-5.4": "5ca128e4037641cc5c8b2371f5f683431e92f4581d6857f03fb0d4f62492bbe4",
+    "gpt-4.1": "790ebe2c6e190cba8af7b43bf0f0124f2dd5bae93d5c510126dc524dccf640f0"
+  }
+}

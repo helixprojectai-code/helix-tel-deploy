@@ -1,0 +1,86 @@
+{
+  "version": "3.0.2",
+  "timestamp": "2026-06-05T12-11-15",
+  "models": [
+    "gpt-5.4",
+    "gpt-4.1"
+  ],
+  "gamma_within": {
+    "gpt-5.4": 0.02702702702702703,
+    "gpt-4.1": 0.05405405405405406
+  },
+  "gamma_between": {
+    "objective": 0.0,
+    "interpretive": 0.0,
+    "judge": 0.125,
+    "flapper": 0.0
+  },
+  "gamma_between_weighted": 0.03125,
+  "judge_quality": {
+    "objective": {
+      "judge_none_rate": null,
+      "model_none_rate": 0.0,
+      "judge_none_count": 0,
+      "model_none_count": 0,
+      "total_verdicts": 0
+    },
+    "interpretive": {
+      "judge_none_rate": 0.0,
+      "model_none_rate": 0.0,
+      "judge_none_count": 0,
+      "model_none_count": 0,
+      "total_verdicts": 120
+    },
+    "judge": {
+      "judge_none_rate": 0.0,
+      "model_none_rate": 0.0,
+      "judge_none_count": 0,
+      "model_none_count": 0,
+      "total_verdicts": 90
+    },
+    "flapper": {
+      "judge_none_rate": 0.0,
+      "model_none_rate": 0.0,
+      "judge_none_count": 0,
+      "model_none_count": 0,
+      "total_verdicts": 50
+    }
+  },
+  "response_diversity": {
+    "gpt-5.4": {
+      "model": "gpt-5.4",
+      "source": "battery+snippet_ent",
+      "n_tests": 40,
+      "mean_response_diversity": 0.955,
+      "mean_pass_entropy": 0.9713,
+      "cage_tests": 1,
+      "frozen_tests": 1,
+      "by_category": {
+        "objective": 0.85,
+        "interpretive": 1.0,
+        "judge": 1.0,
+        "flapper": 1.0
+      }
+    },
+    "gpt-4.1": {
+      "model": "gpt-4.1",
+      "source": "snippet_fallback",
+      "n_tests": 40,
+      "mean_response_diversity": 0.97,
+      "mean_pass_entropy": 0.9923,
+      "cage_tests": 0,
+      "frozen_tests": 0,
+      "by_category": {
+        "objective": 0.9,
+        "interpretive": 1.0,
+        "judge": 1.0,
+        "flapper": 1.0
+      }
+    }
+  },
+  "suspicious_perfection": [],
+  "verdict_hashes": {
+    "gpt-5.4": "136d7c877c67f56825e9a491fbaff52b7bf2b5ddbda4e382d59e000e3f262f37",
+    "gpt-4.1": "790ebe2c6e190cba8af7b43bf0f0124f2dd5bae93d5c510126dc524dccf640f0"
+  }
+}
