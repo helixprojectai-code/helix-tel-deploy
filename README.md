@@ -23,7 +23,7 @@ This repository now includes research artifacts from the v3 convergence battery 
 This is the empirical research companion to the published 27-test TEL grammar battery. See the analysis markdown for stability comparisons and insights.
 
 (Added as part of v3 research update 2026-06-04.)
-
+```
 ## Project Map
 
 ![Map](docs/map.png)
