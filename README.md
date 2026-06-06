@@ -24,3 +24,7 @@ This is the empirical research companion to the published 27-test TEL grammar ba
 
 (Added as part of v3 research update 2026-06-04.)
 
+## Project Map
+
+![Map](docs/map.png)
+
