@@ -26,7 +26,7 @@ logging.basicConfig(
 )
 log = logging.getLogger("p2p_recv")
 
-KNOWN_C_SEED = "16ce8df91c0d04baf63f6a4b3f3471251c8b012dcf78e0a09b6183ec54cbed72"
+KNOWN_C_SEED = "c9b0b4c41bb10069d2109b64d8ddad1037531031a93d17dd62de5bd7b2a6a1ac"
 
 
 KEEPALIVE_INTERVAL = 30  # seconds
