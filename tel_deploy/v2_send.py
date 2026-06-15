@@ -17,8 +17,8 @@ Environment:
     TEL_ENDPOINT     AI endpoint URL
     TEL_MODEL        Model/deployment name
     TEL_API_KEY      API key
-    TEL_HUB_HOST     Hub hostname (default: 20.63.74.183)
-    TEL_HUB_PORT     Hub port (default: 9999)
+    TEL_HUB_HOST     Hub hostname (default: tel.helixaiinnovations.ca)
+    TEL_HUB_PORT     Hub port (default: 9738)
 """
 
 import argparse
@@ -42,8 +42,8 @@ logging.basicConfig(
 )
 log = logging.getLogger("tel.v2_send")
 
-DEFAULT_HUB = os.environ.get("TEL_HUB_HOST", "20.63.74.183")
-DEFAULT_PORT = int(os.environ.get("TEL_HUB_PORT", 9999))
+DEFAULT_HUB = os.environ.get("TEL_HUB_HOST", "tel.helixaiinnovations.ca")
+DEFAULT_PORT = int(os.environ.get("TEL_HUB_PORT", 9738))
 DEFAULT_TOPOLOGY = "universal"
 
 
